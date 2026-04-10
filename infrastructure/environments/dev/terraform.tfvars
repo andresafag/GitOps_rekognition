@@ -1,0 +1,7 @@
+aws_region = "us-east-1"
+image_bucket_name = "rekognition-image-bucket-dev"
+sqs_queue_name = "rekognition-image-queue-dev"
+presigned_url_lambda_name = "rekognition-presigned-url-lambda-dev"
+rekognition_lambda_name = "rekognition-consumer-lambda-dev"
+api_name = "rekognition-presigned-url-api-dev"
+upload_prefix = "uploads/"
