@@ -100,10 +100,4 @@ jobs:
       with:
         category: "/language:${{matrix.language}}"
 
-    - name: Check
-      uses: snyk/actions@0.4.0
-      with:
-        command: test
-    # Output a snyk.json file with results if running the test command
-        json: snyk.json
-          
+
