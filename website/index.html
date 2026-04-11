@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekognition Upload</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🖼️ AI Image Analyzer</h1>
+    <p>Discover what's in your images with advanced AI detection</p>
+  </header>
+
+  <section class="hero">
+    <div class="carousel">
+      <div class="carousel-container">
+        <div class="carousel-slide active">
+          <img src="https://picsum.photos/600/400?random=1" alt="Sample image 1">
+          <div class="carousel-caption">Upload your images for instant analysis</div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://picsum.photos/600/400?random=2" alt="Sample image 2">
+          <div class="carousel-caption">Detect labels, objects, and scenes</div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://picsum.photos/600/400?random=3" alt="Sample image 3">
+          <div class="carousel-caption">Recognize celebrities and faces</div>
+        </div>
+      </div>
+      <button class="carousel-btn prev">❮</button>
+      <button class="carousel-btn next">❯</button>
+      <div class="carousel-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="upload-section">
+      <h2>Analyze Your Image</h2>
+
+      <label class="file-upload">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png" />
+        <div class="upload-area">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">Choose an image or drag & drop</div>
+          <div class="upload-hint">ℹ️ Only JPEG and PNG formats supported, up to 10MB</div>
+        </div>
+      </label>
+
+      <fieldset class="detection-options">
+        <legend>Choose Detection Type</legend>
+        <label class="option">
+          <input type="radio" name="detectionMode" value="labels" checked />
+          <span class="option-icon">🏷️</span>
+          <span class="option-text">Label Detection</span>
+          <span class="option-desc">Identify objects, scenes, and activities</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="detectionMode" value="celebrity" />
+          <span class="option-icon">⭐</span>
+          <span class="option-text">Celebrity Detection</span>
+          <span class="option-desc">Recognize famous people and faces</span>
+        </label>
+      </fieldset>
+
+      <button id="uploadButton" disabled>🚀 Analyze Image</button>
+
+      <div id="status" class="status-message"></div>
+    </section>
+
+    <section id="results" class="results-section" style="display: none;">
+      <h2>🎉 Analysis Complete!</h2>
+      <div class="results-content">
+        <div class="image-preview">
+          <img id="uploadedImage" alt="Analyzed image" />
+        </div>
+        <div id="analysisData" class="analysis-results"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

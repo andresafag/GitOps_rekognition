@@ -21,6 +21,18 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "image_bucket" {
   }
 }
 
+resource "aws_s3_bucket_cors_configuration" "image_bucket" {
+  bucket = aws_s3_bucket.image_bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "PUT", "POST", "HEAD", "DELETE"]
+    allowed_origins = ["*"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "image_bucket" {
   bucket = aws_s3_bucket.image_bucket.id
 
@@ -30,12 +42,24 @@ resource "aws_s3_bucket_public_access_block" "image_bucket" {
   restrict_public_buckets = true
 }
 
+resource "aws_sqs_queue" "dead_letter_queue" {
+  name                      = "${var.sqs_queue_name}-dead-letter"
+  message_retention_seconds = 1209600
+  tags                      = local.lambda_tags
+  sqs_managed_sse_enabled   = true
+}
+
 resource "aws_sqs_queue" "image_notifications" {
   name                       = var.sqs_queue_name
   visibility_timeout_seconds = 60
   message_retention_seconds  = 345600
   receive_wait_time_seconds  = 10
-  tags                       = local.lambda_tags
+  sqs_managed_sse_enabled    = true
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dead_letter_queue.arn
+    maxReceiveCount     = 3
+  })
+  tags = local.lambda_tags
 }
 
 resource "aws_sqs_queue_policy" "allow_s3_send_message" {
@@ -102,9 +126,21 @@ resource "aws_iam_role_policy" "presigned_url_lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:GetObject"
         ]
-        Resource = "${aws_s3_bucket.image_bucket.arn}/*"
+        Resource = [
+          "${aws_s3_bucket.image_bucket.arn}/*",
+          "${aws_s3_bucket.image_bucket.arn}/results/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = "${aws_s3_bucket.image_bucket.arn}"
       },
       {
         Effect = "Allow"
@@ -149,7 +185,7 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
         Effect = "Allow"
         Action = [
           "rekognition:DetectLabels",
-          "rekognition:DetectModerationLabels"
+          "rekognition:RecognizeCelebrities"
         ]
         Resource = "*"
       },
@@ -243,9 +279,117 @@ resource "aws_lambda_event_source_mapping" "sqs_to_rekognition" {
   batch_size       = 1
 }
 
+resource "aws_sns_topic" "dlq_alert" {
+  name = "${var.sqs_queue_name}-dlq-alert"
+}
+
+resource "aws_sns_topic_subscription" "dlq_alert_email" {
+  count     = var.notification_email != "" ? 1 : 0
+  topic_arn = aws_sns_topic.dlq_alert.arn
+  protocol  = "email"
+  endpoint  = var.notification_email
+}
+
+resource "aws_cloudwatch_metric_alarm" "dlq_message_alarm" {
+  alarm_name          = "${var.sqs_queue_name}-dlq-message-alarm"
+  alarm_description   = "Alert when any message remains in the dead-letter queue for over 10 minutes."
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 0.5
+  alarm_actions       = [aws_sns_topic.dlq_alert.arn]
+  dimensions = {
+    QueueName = aws_sqs_queue.dead_letter_queue.name
+  }
+  treat_missing_data = "notBreaching"
+}
+
+resource "aws_cloudwatch_dashboard" "rekognition_pipeline" {
+  dashboard_name = "rekognition-pipeline"
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+        properties = {
+          view    = "timeSeries"
+          stacked = false
+          metrics = [
+            ["AWS/Lambda", "Invocations", "FunctionName", aws_lambda_function.rekognition_consumer.function_name],
+            [".", "Duration", "FunctionName", aws_lambda_function.rekognition_consumer.function_name]
+          ]
+          region = var.aws_region
+          title  = "Rekognition Consumer Invocations / Duration"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+        properties = {
+          view    = "timeSeries"
+          stacked = false
+          metrics = [
+            ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", aws_sqs_queue.image_notifications.name]
+          ]
+          region = var.aws_region
+          title  = "SQS Queue Length"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          view    = "timeSeries"
+          stacked = false
+          metrics = [
+            ["AWS/Rekognition", "Requests"]
+          ]
+          region = var.aws_region
+          title  = "Rekognition API Requests"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          view = "singleValue"
+          metrics = [
+            ["AWS/Lambda", "Errors", "FunctionName", aws_lambda_function.rekognition_consumer.function_name]
+          ]
+          region = var.aws_region
+          title  = "Rekognition Consumer Errors"
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_apigatewayv2_api" "http_api" {
   name          = var.api_name
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_headers = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"]
+    allow_methods = ["OPTIONS", "GET", "POST"]
+    allow_origins = ["*"]
+    expose_headers = ["ETag"]
+    max_age = 3600
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
@@ -256,9 +400,21 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "presigned_url_route" {
+resource "aws_apigatewayv2_route" "label_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /upload"
+  route_key = "POST /labels"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "celebrity_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /celebrity"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "results_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /results"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 

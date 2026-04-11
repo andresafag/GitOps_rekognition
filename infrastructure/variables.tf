@@ -39,3 +39,9 @@ variable "upload_prefix" {
   type        = string
   default     = "uploads/"
 }
+
+variable "notification_email" {
+  description = "Email address to receive DLQ alert notifications via SNS."
+  type        = string
+  default     = "andresfelipeacostagarcia34@gmail.com"
+}
