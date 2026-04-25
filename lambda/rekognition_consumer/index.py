@@ -1,113 +1,109 @@
 import json
 import boto3
 import urllib.parse
+import base64
 import os
 from datetime import datetime
 
 rekognition = boto3.client('rekognition')
 s3 = boto3.client('s3')
-
+dynamoDB = boto3.resource('dynamodb')
+table = dynamoDB.Table('mapping-routes')
+connection_table = dynamoDB.Table('websocket-connections')
+bucket = os.environ['IMAGE_BUCKET_NAME']
 
 def handler(event, context):
-    print('Received SQS event', json.dumps(event))
+    try:
+        for record in event.get('Records', []):
+            body = json.loads(record['body'])
+        if 'Records' in body:
+            for s3_record in body['Records']:
+                try:
+                    # 3. Accedemos a los datos de S3 correctamente
+                    object_key = s3_record['s3']['object']['key']
+                    bucket_name = s3_record['s3']['bucket']['name']
 
-    for record in event.get('Records', []):
-        body = record.get('body')
-        try:
-            message = json.loads(body)
-        except Exception as error:
-            print('Unable to parse SQS record body', error)
-            continue
+                    image = {
+                        'S3Object': {
+                        'Bucket': bucket,
+                        'Name': object_key
+                        }
+                    }
 
-        s3_records = message.get('Records', [])
-        if not s3_records:
-            print('Non-S3 event passed from SQS', message)
-            continue
+                    metadata = s3.head_object(Bucket=bucket_name, Key=object_key)
+                    metadatos = metadata.get('Metadata', {})
+                    print(f"Metadata for object {object_key}: {metadata.get('Metadata')}")
+                    formatted = {
+                        "mode": metadatos.get('detection_mode'),
+                        "items": []
+                    }
+                    response_image = s3.get_object(Bucket=bucket_name, Key=object_key)
+                    image_bytes = response_image['Body'].read()
+                    encoded_image = base64.b64encode(image_bytes).decode('utf-8')
+                    payload = {
+                        "filename": object_key,
+                        "type": "image/jpeg",
+                        "data": encoded_image,
+                        "mensaje_servidor": "resultados",
+                        "info": formatted
+                    }
 
-        s3_event = s3_records[0].get('s3')
-        if not s3_event:
-            print('Non-S3 event passed from SQS', message)
-            continue
+                    moderation_content = rekognition.detect_moderation_labels(Image=image, MinConfidence=75)
+                    for item in moderation_content['ModerationLabels']:
+                        print(f"Moderation label: {item}")
+                        if item['Name'] == 'Explicit Sexual Activity' or item['Name'] == 'Exposed Female Genitalia':
+                            print("Imagen no permitida")
+                            mensaje=json.dumps({
+                                "mensaje_servidor": "explicit",
+                                "info": "The image contains inappropiate content"
+                            })
+                            gatewayapi = boto3.client(
+                                "apigatewaymanagementapi",
+                                endpoint_url=metadatos.get('domainname')
+                            )
+                            gatewayapi.post_to_connection(
+                                ConnectionId=metadatos.get('connection_id'),
+                                Data=mensaje
+                            )
+                            return
+                    if metadatos.get('detection_mode') == 'labels':
+                        result = rekognition.detect_labels(Image=image, MaxLabels=10, MinConfidence=75)
+                        for item in result.get('Labels', []):
+                            formatted["items"].append({
+                                "name": item['Name'],
+                                "confidence": round(item['Confidence'], 2)
+                            })                        
+                    elif metadatos.get('detection_mode') == 'celebrity':
+                        result = rekognition.recognize_celebrities(Image=image)
+                        for item in result.get('CelebrityFaces', []):
+                            formatted["items"].append({
+                                "name": item['Name'],
+                                "confidence": round(item['MatchConfidence'], 2),
+                                "urls": item.get('Urls', [])
+                            })
+                    print(formatted)
 
-        bucket_name = s3_event['bucket']['name']
-        object_key = urllib.parse.unquote_plus(s3_event['object']['key'])
+                    # mensaje=json.dumps({
+                    #     "mensaje_servidor": "resultados",
+                    #     "info": formatted
+                    # })
 
-        print('Processing object', bucket_name, object_key)
+                    gatewayapi = boto3.client(
+                        "apigatewaymanagementapi", 
+                        endpoint_url=metadatos.get('domainname')
+                    )
 
-        detection_mode = 'labels'
-        try:
-            metadata = s3.head_object(Bucket=bucket_name, Key=object_key).get('Metadata', {})
-            detection_mode = metadata.get('detection-mode', detection_mode)
-        except Exception as metadata_error:
-            print(f'Could not read object metadata: {metadata_error}')
+                    gatewayapi.post_to_connection(
+                        ConnectionId=metadatos.get('connection_id'),
+                        Data=json.dumps(payload)  
+                    )
+                    
+                except KeyError as e:
+                    print(f"Error: No se encontró la clave {e} en el evento de S3")
 
-        if detection_mode not in ('labels', 'celebrity'):
-            if object_key.startswith('uploads/celebrity/'):
-                detection_mode = 'celebrity'
-            else:
-                detection_mode = 'labels'
+    except Exception as metadata_error:
+        print(f'Could not read object metadata: {metadata_error}')
 
-        image = {
-            'S3Object': {
-                'Bucket': bucket_name,
-                'Name': object_key,
-            }
-        }
-
-        try:
-            if detection_mode == 'celebrity':
-                result = rekognition.recognize_celebrities(Image=image)
-                print('Rekognition celebrity result:', json.dumps(result, indent=2, default=str))
-
-                result_data = {
-                    'originalImage': object_key,
-                    'timestamp': datetime.utcnow().isoformat(),
-                    'detectionMode': detection_mode,
-                    'celebrities': result.get('CelebrityFaces', []),
-                    'unrecognizedFaces': result.get('UnrecognizedFaces', []),
-                    'responseMetadata': result.get('ResponseMetadata', {})
-                }
-            else:
-                result = rekognition.detect_labels(Image=image, MaxLabels=10, MinConfidence=75)
-                print('Rekognition label result:', json.dumps(result, indent=2, default=str))
-
-                result_data = {
-                    'originalImage': object_key,
-                    'timestamp': datetime.utcnow().isoformat(),
-                    'detectionMode': detection_mode,
-                    'labels': result.get('Labels', []),
-                    'responseMetadata': result.get('ResponseMetadata', {})
-                }
-
-            result_key = f"results/{object_key.replace('/', '-')}.json"
-            print(f'Storing results to s3://{bucket_name}/{result_key}')
-            s3.put_object(
-                Bucket=bucket_name,
-                Key=result_key,
-                Body=json.dumps(result_data, indent=2, default=str),
-                ContentType='application/json'
-            )
-            print(f'Stored Rekognition results to s3://{bucket_name}/{result_key}')
-
-        except Exception as error:
-            print(f'Rekognition failed: {error}')
-            # Store error information
-            error_key = f"results/errors/{object_key.replace('/', '-')}.json"
-            error_data = {
-                'originalImage': object_key,
-                'timestamp': datetime.utcnow().isoformat(),
-                'error': str(error)
-            }
-            try:
-                s3.put_object(
-                    Bucket=bucket_name,
-                    Key=error_key,
-                    Body=json.dumps(error_data, indent=2),
-                    ContentType='application/json'
-                )
-                print(f'Stored error log to s3://{bucket_name}/{error_key}')
-            except Exception as s3_error:
-                print(f'Failed to store error log: {s3_error}')
 
     return {
         'statusCode': 200,

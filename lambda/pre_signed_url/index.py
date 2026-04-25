@@ -4,13 +4,19 @@ import boto3
 import time
 import uuid
 from botocore.exceptions import ClientError
+sqs = boto3.client('sqs')
+QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/688567305851/rekognition-image-queue"
 
 s3 = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('mapping-routes')
+connection_table = dynamodb.Table('websocket-connections')
 
 
 def handler(event, context):
     payload = {}
     body = event.get('body')
+    print(f"Received event: {json.dumps(event)}")
     if body:
         try:
             payload = json.loads(body)
@@ -19,12 +25,15 @@ def handler(event, context):
                 'statusCode': 400,
                 'body': json.dumps({'error': 'Invalid JSON body.'})
             }
+        
+    prefix = os.environ.get('UPLOAD_PREFIX')
+    detection_mode = ''
 
-    query_params = event.get('queryStringParameters') or {}
-    prefix = os.environ.get('UPLOAD_PREFIX', 'uploads/')
-    detection_mode = payload.get('detectionMode') or payload.get('mode') or query_params.get('detectionMode') or 'labels'
-    detection_mode = detection_mode.lower() if isinstance(detection_mode, str) else 'labels'
-
+    print("payload dumping: ", json.dumps(payload))
+    print(f"Received event: {json.dumps(event)}")
+    print(f"Determined detection mode: {detection_mode}")
+    print(f"Rawpath: {event.get('rawPath')}")
+    
     raw_path = event.get('rawPath') or event.get('requestContext', {}).get('http', {}).get('path', '')
     if raw_path.endswith('/celebrity'):
         detection_mode = 'celebrity'
@@ -34,8 +43,9 @@ def handler(event, context):
     if detection_mode not in ('labels', 'celebrity'):
         detection_mode = 'labels'
 
-    content_type = payload.get('contentType') or query_params.get('contentType') or 'image/jpeg'
-    filename = payload.get('filename') or query_params.get('filename')
+    content_type = payload.get('contentType') 
+    filename = payload.get('filename')
+    websocket_connection_id = payload.get('WebSocketConnectionId')
     bucket = os.environ.get('S3_BUCKET_NAME')
 
     if not bucket:
@@ -44,53 +54,19 @@ def handler(event, context):
             'body': json.dumps({'error': 'Missing S3_BUCKET_NAME environment variable.'})
         }
 
-    if raw_path.endswith('/results') and event.get('requestContext', {}).get('http', {}).get('method', '') == 'GET':
-        query_params = event.get('queryStringParameters') or {}
-        result_key = query_params.get('key')
-        if not result_key:
-            return {
-                'statusCode': 400,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Missing result key.'})
-            }
-
-        try:
-            result_object = s3.get_object(Bucket=bucket, Key=result_key)
-            body = result_object['Body'].read().decode('utf-8')
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json'
-                },
-                'body': body
-            }
-        except ClientError as e:
-            error_code = e.response.get('Error', {}).get('Code', '')
-            if error_code == 'NoSuchKey':
-                return {
-                    'statusCode': 404,
-                    'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps({'error': 'Result not ready.'})
-                }
-            print(f'ClientError reading result object: {e}')
-            return {
-                'statusCode': 500,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': f'Failed to read result: {str(e)}'})
-            }
-        except Exception as e:
-            print(f'Error reading result object: {str(e)}')
-            return {
-                'statusCode': 500,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': f'Failed to read result: {str(e)}'})
-            }
-
+    lastpart = f"{uuid.uuid4()}-{filename}"
     if filename:
-        filename = os.path.basename(filename)
-        key_name = f"{prefix}{detection_mode}/{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}-{filename}"
+        key_name = f"{prefix}{detection_mode}/{lastpart}"
     else:
-        key_name = f"{prefix}{detection_mode}/{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+        key_name = f"{prefix}{detection_mode}/{uuid.uuid4()}"
+
+    metadata = {
+        'detection_mode': detection_mode,
+        "connection_id": payload.get('WebSocketConnectionId'),
+        "domainName": "https://wh08cwowvj.execute-api.us-east-1.amazonaws.com/$default/",
+        "stage": "default",
+        "image_id": lastpart
+    }
 
     try:
         upload_url = s3.generate_presigned_url(
@@ -99,11 +75,33 @@ def handler(event, context):
                 'Bucket': bucket,
                 'Key': key_name,
                 'ContentType': content_type,
-                'Metadata': {
-                    'detection-mode': detection_mode,
-                },
+                'Metadata': metadata
             },
             ExpiresIn=300
+        )
+
+        # sqs.send_message(
+        #     QueueUrl=QUEUE_URL,
+        #     MessageBody=json.dumps({
+                
+        #         })
+        #     )
+        # item_id = lastpart
+        print(f"Este es el key name generado: {key_name}")
+        # table.put_item(
+        # Item={
+        #     'id': item_id,         # Esta es tu Partition Key
+        #     's3_uri': f"s3://rekognition-image-bucket123456/uploads/{detection_mode}/{item_id}",      # s3://rekognition-image...
+        #     's3_url': f"https://rekognition-image-bucket123456.s3.us-east-1.amazonaws.com/uploads/{detection_mode}/{item_id}",    
+        #     'timestamp': '2023-10-27T10:00:00Z' # Opcional: para saber cuándo se subió
+        #     }
+        # )
+
+        connection_table.put_item(
+        Item={
+            'id': websocket_connection_id,         # Esta es tu Partition Key
+            'timestamp': '2023-10-27T10:00:00Z' # Opcional: para saber cuándo se subió
+            }
         )
     except Exception as e:
         return {
@@ -111,61 +109,20 @@ def handler(event, context):
             'body': json.dumps({'error': f'Failed to generate presigned URL: {str(e)}'})
         }
 
-    if raw_path.endswith('/results') and event.get('requestContext', {}).get('http', {}).get('method', '') == 'GET':
-        query_params = event.get('queryStringParameters') or {}
-        result_key = query_params.get('key')
-        if not result_key:
-            return {
-                'statusCode': 400,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Missing result key.'})
-            }
 
-        try:
-            result_object = s3_bucket.get_object(Bucket=bucket, Key=result_key)
-            body = result_object['Body'].read().decode('utf-8')
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json'
-                },
-                'body': body
-            }
-        except ClientError as e:
-            error_code = e.response.get('Error', {}).get('Code', '')
-            if error_code == 'NoSuchKey':
-                return {
-                    'statusCode': 404,
-                    'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps({'error': 'Result not ready.'})
-                }
-            print(f'ClientError reading result object: {e}')
-            return {
-                'statusCode': 500,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': f'Failed to read result: {str(e)}'})
-            }
-        except Exception as e:
-            print(f'Error reading result object: {str(e)}')
-            return {
-                'statusCode': 500,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': f'Failed to read result: {str(e)}'})
-            }
-
-    # Generate result key and upload presigned URL for image upload
-    result_key = f"results/{key_name.replace('/', '-')}.json"
+    # upload presigned URL for image upload
     return {
         'statusCode': 200,
         'headers': {
             'Content-Type': 'application/json'
-        },
+         },
         'body': json.dumps({
             'uploadUrl': upload_url,
-            'resultKey': result_key,
             'key': key_name,
             'bucket': bucket,
             'expiresInSeconds': 300,
-            'detectionMode': detection_mode,
+            'detection_mode': detection_mode,
+            'stage': "default",
+            'imageId': lastpart
         })
     }

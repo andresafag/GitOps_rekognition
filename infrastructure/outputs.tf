@@ -22,3 +22,8 @@ output "presigned_url_lambda_name" {
   description = "Name of the Lambda function that issues presigned URLs."
   value       = aws_lambda_function.presigned_url.function_name
 }
+
+output "websocket" {
+  description = "websocket"
+  value = aws_apigatewayv2_api.websocket.api_endpoint
+}

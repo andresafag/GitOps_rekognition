@@ -1,95 +1,72 @@
-# Rekognition Infrastructure
+🏗️ Arquitectura del Sistema
+El flujo de trabajo es totalmente automatizado y desacoplado:
+API Gateway: Punto de entrada para solicitar URLs pre-firmadas 🔑.
+S3 Bucket: Repositorio de imágenes analizadas y almacenamiento de resultados 📥.
+SQS Queue: Desacopla la subida del análisis, garantizando escalabilidad 📬.
+Lambda Functions:
+Pre-signed URL: Genera accesos temporales para subidas seguras.
+Rekognition Processor: El "cerebro" que detecta etiquetas y celebridades.
 
-This project implements an AWS-based image processing pipeline using Terraform.
-
-## Architecture
-
-- **S3 Bucket**: Stores uploaded images
-- **SQS Queue**: Receives notifications when images are uploaded
-- **Lambda Functions**: 
-  - Presigned URL generator (Python)
-  - Rekognition processor (Python)
-- **API Gateway**: HTTP API for requesting upload URLs
-
-## Project Structure
-
-```
-├── lambda/                          # Lambda function source code
-│   ├── pre_signed_url/
+.
+├── 📂 lambda/                       # 🐍 Código fuente de las funciones
+│   ├── 📂 pre_signed_url/           # Generador de tickets de carga
 │   │   └── index.py
-│   └── rekognition_consumer/
+│   └── 📂 rekognition_consumer/      # Consumidor de SQS e IA
 │       └── index.py
-├── infrastructure/                  # Terraform configuration
-│   ├── environments/                # Environment-specific configurations
-│   │   ├── dev/
-│   │   │   └── terraform.tfvars
-│   │   └── prod/
-│   │       └── terraform.tfvars
-│   ├── backend.tf                   # S3 backend configuration
-│   ├── provider.tf                  # AWS provider configuration
-│   ├── variables.tf                 # Input variables
-│   ├── outputs.tf                   # Output values
-│   ├── main.tf                      # Main infrastructure resources
-│   └── terraform.tfvars.example     # Example variables
-└── README.md                        # This file
-```
+├── 📂 infrastructure/               # 🏗️ Configuración de Terraform
+│   ├── 📂 environments/             # 🌍 Configuración por entorno
+│   │   ├── 🔹 dev/                  # Desarrollo
+│   │   └── 🔸 prod/                 # Producción
+│   ├── backend.tf                   # Estado remoto en S3
+│   ├── variables.tf                 # Entradas dinámicas
+│   └── main.tf                      # Recursos núcleo
+└── 📂 .github/workflows             # 🤖 GitOps: CodeQL & Snyk Scan
 
-## Usage
 
-### Prerequisites
+🛡️ Seguridad y GitOps (DevSecOps)
+Este repositorio no solo despliega infraestructura, sino que la protege mediante un pipeline de CI/CD integrado con:
+CodeQL: Análisis estático de seguridad profundo por GitHub.
+Snyk Scan: Escaneo de vulnerabilidades en código Python y archivos de Terraform (IaC).
+Automated Deployment: Cada cambio en main se valida rigurosamente.
 
-- AWS CLI configured with appropriate permissions
-- Terraform >= 1.5.0
+🚀 Guía de Despliegue
+1️⃣ Requisitos Previos
+Terraform >= 1.5.0
+AWS CLI configurado con permisos de Admin.
+Token de Snyk (opcional, para el pipeline).
+2️⃣ Pasos para Desplegar
 
-### Deployment
+# Entrar al directorio
+cd infrastructure
 
-1. Navigate to the infrastructure directory:
-   ```bash
-   cd infrastructure
-   ```
+# Inicializar Terraform
+terraform init
 
-2. Initialize Terraform:
-   ```bash
-   terraform init
-   ```
+# Elegir entorno (dev o prod)
+terraform plan -var-file=environments/dev/terraform.tfvars
 
-3. Plan deployment for a specific environment:
-   ```bash
-   # For development
-   terraform plan -var-file=environments/dev/terraform.tfvars
+# ¡Lanzar a la nube! ☁️
+terraform apply -var-file=environments/dev/terraform.tfvars
 
-   # For production
-   terraform plan -var-file=environments/prod/terraform.tfvars
-   ```
 
-4. Apply the configuration:
-   ```bash
-   # For development
-   terraform apply -var-file=environments/dev/terraform.tfvars
+🧪 Pruebas (Testing)
+¡Haz que la magia ocurra! 🪄
 
-   # For production
-   terraform apply -var-file=environments/prod/terraform.tfvars
-   ```
 
-### Testing
+Obtén tu URL de carga:
 
-1. Get a presigned upload URL:
-   ```bash
-   curl -X POST https://your-api-endpoint/upload \
-     -H "Content-Type: application/json"
-   ```
+curl -X POST https://TU_API_ENDPOINT/upload
 
-2. Upload an image using the returned URL:
-   ```bash
-   curl -X PUT "presigned-url-from-step-1" \
-     -H "Content-Type: image/jpeg" \
-     --data-binary @path/to/image.jpg
-   ```
+Sube una foto
 
-3. Check Rekognition results in the S3 bucket under `results/` folder.
+curl -X PUT "URL_RECIBIDA" --data-binary @mi_foto.jpg
 
-## Cleanup
 
-```bash
+Revisa los resultados: Mira en tu bucket S3 la carpeta /results para ver los JSON generados por la IA. 🕵️‍♂️
+
+🧹 Limpieza
+Para evitar cargos inesperados en tu cuenta de AWS:
+
 terraform destroy -var-file=environments/dev/terraform.tfvars
-```
+
+Hecho con ❤️ por andresafag

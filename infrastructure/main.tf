@@ -5,6 +5,86 @@ locals {
   }
 }
 
+# API Gateway and related resources ---------------------------------------
+
+resource "aws_apigatewayv2_api" "http_api" {
+  name          = var.api_name
+  protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_headers  = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"]
+    allow_methods  = ["OPTIONS", "GET", "POST"]
+    allow_origins  = ["*"]
+    expose_headers = ["ETag"]
+    max_age        = 3600
+  }
+}
+
+resource "aws_apigatewayv2_integration" "lambda_integration_presigned_url" {
+  api_id                 = aws_apigatewayv2_api.http_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.presigned_url.arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_api" "websocket" {
+  name         = "${var.api_name}-websocket"
+  protocol_type = "WEBSOCKET"
+  route_selection_expression = "$request.body.action"
+
+}
+
+resource "aws_apigatewayv2_integration" "websocket_integration" {
+  api_id                 = aws_apigatewayv2_api.websocket.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.rekognition_consumer.arn
+  integration_method     = "POST"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_integration" "lambda_integration_rekognition_consumer" {
+  api_id                 = aws_apigatewayv2_api.http_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.rekognition_consumer.arn
+  integration_method     = "GET"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "websocket_route" {
+  api_id    = aws_apigatewayv2_api.websocket.id
+  route_key = "sockets"
+  target    = "integrations/${aws_apigatewayv2_integration.websocket_integration.id}"
+}
+
+
+resource "aws_apigatewayv2_route" "label_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /labels"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration_presigned_url.id}"
+}
+
+resource "aws_apigatewayv2_route" "celebrity_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /celebrity"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration_presigned_url.id}"
+}
+
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id      = aws_apigatewayv2_api.http_api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_stage" "websocket_stage" {
+  api_id      = aws_apigatewayv2_api.websocket.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+# S3 Bucket for image uploads ---------------------------------------
+
 resource "aws_s3_bucket" "image_bucket" {
   bucket        = var.image_bucket_name
   force_destroy = true
@@ -21,6 +101,17 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "image_bucket" {
   }
 }
 
+resource "aws_s3_bucket_notification" "image_upload" {
+  bucket = aws_s3_bucket.image_bucket.id
+
+  queue {
+    queue_arn = aws_sqs_queue.image_notifications.arn
+    events    = ["s3:ObjectCreated:Put"]
+  }
+
+  depends_on = [aws_sqs_queue_policy.allow_s3_send_message]
+}
+
 resource "aws_s3_bucket_cors_configuration" "image_bucket" {
   bucket = aws_s3_bucket.image_bucket.id
 
@@ -33,14 +124,7 @@ resource "aws_s3_bucket_cors_configuration" "image_bucket" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "image_bucket" {
-  bucket = aws_s3_bucket.image_bucket.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+# SQS Queues for event-driven processing ---------------------------------------
 
 resource "aws_sqs_queue" "dead_letter_queue" {
   name                      = "${var.sqs_queue_name}-dead-letter"
@@ -51,7 +135,7 @@ resource "aws_sqs_queue" "dead_letter_queue" {
 
 resource "aws_sqs_queue" "image_notifications" {
   name                       = var.sqs_queue_name
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = 180
   message_retention_seconds  = 345600
   receive_wait_time_seconds  = 10
   sqs_managed_sse_enabled    = true
@@ -62,168 +146,34 @@ resource "aws_sqs_queue" "image_notifications" {
   tags = local.lambda_tags
 }
 
-resource "aws_sqs_queue_policy" "allow_s3_send_message" {
-  queue_url = aws_sqs_queue.image_notifications.id
+# DynamoDB Table for storing Rekognition results
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowS3EventDelivery"
-        Effect = "Allow"
-        Principal = {
-          Service = "s3.amazonaws.com"
-        }
-        Action   = "sqs:SendMessage"
-        Resource = aws_sqs_queue.image_notifications.arn
-        Condition = {
-          ArnEquals = {
-            "aws:SourceArn" = aws_s3_bucket.image_bucket.arn
-          }
-        }
-      }
-    ]
-  })
-}
+resource "aws_dynamodb_table" "rekognition_results" {
+  name         = "mapping-routes"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
 
-resource "aws_s3_bucket_notification" "image_upload" {
-  bucket = aws_s3_bucket.image_bucket.id
-
-  queue {
-    queue_arn = aws_sqs_queue.image_notifications.arn
-    events    = ["s3:ObjectCreated:*"]
+  attribute {
+    name = "id"
+    type = "S"
   }
 
-  depends_on = [aws_sqs_queue_policy.allow_s3_send_message]
-}
-
-resource "aws_iam_role" "presigned_url_lambda_role" {
-  name = "${var.presigned_url_lambda_name}-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-
   tags = local.lambda_tags
 }
 
-resource "aws_iam_role_policy" "presigned_url_lambda_policy" {
-  name = "${var.presigned_url_lambda_name}-policy"
-  role = aws_iam_role.presigned_url_lambda_role.id
+resource "aws_dynamodb_table" "connections" {
+  name         = "websocket-connections"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject"
-        ]
-        Resource = [
-          "${aws_s3_bucket.image_bucket.arn}/*",
-          "${aws_s3_bucket.image_bucket.arn}/results/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetBucketLocation"
-        ]
-        Resource = "${aws_s3_bucket.image_bucket.arn}"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role" "rekognition_lambda_role" {
-  name = "${var.rekognition_lambda_name}-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
+  attribute {
+    name = "id"
+    type = "S"
+  }
 
   tags = local.lambda_tags
 }
-
-resource "aws_iam_role_policy" "rekognition_lambda_policy" {
-  name = "${var.rekognition_lambda_name}-policy"
-  role = aws_iam_role.rekognition_lambda_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "rekognition:DetectLabels",
-          "rekognition:RecognizeCelebrities"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject"
-        ]
-        Resource = "${aws_s3_bucket.image_bucket.arn}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject"
-        ]
-        Resource = "${aws_s3_bucket.image_bucket.arn}/results/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ]
-        Resource = aws_sqs_queue.image_notifications.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      }
-    ]
-  })
-}
+# Lambda functions and related resources ---------------------------------------
 
 data "archive_file" "presigned_url_lambda" {
   type        = "zip"
@@ -242,7 +192,7 @@ resource "aws_lambda_function" "presigned_url" {
   filename         = data.archive_file.presigned_url_lambda.output_path
   source_code_hash = data.archive_file.presigned_url_lambda.output_base64sha256
   handler          = "index.handler"
-  runtime          = "python3.11"
+  runtime          = "python3.10"
   role             = aws_iam_role.presigned_url_lambda_role.arn
 
   environment {
@@ -260,7 +210,7 @@ resource "aws_lambda_function" "rekognition_consumer" {
   filename         = data.archive_file.rekognition_lambda.output_path
   source_code_hash = data.archive_file.rekognition_lambda.output_base64sha256
   handler          = "index.handler"
-  runtime          = "python3.11"
+  runtime          = "python3.10"
   role             = aws_iam_role.rekognition_lambda_role.arn
 
   environment {
@@ -279,6 +229,14 @@ resource "aws_lambda_event_source_mapping" "sqs_to_rekognition" {
   batch_size       = 1
 }
 
+resource "aws_lambda_permission" "allow_apigw_invocation" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.presigned_url.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
 resource "aws_sns_topic" "dlq_alert" {
   name = "${var.sqs_queue_name}-dlq-alert"
 }
@@ -289,6 +247,10 @@ resource "aws_sns_topic_subscription" "dlq_alert_email" {
   protocol  = "email"
   endpoint  = var.notification_email
 }
+
+
+
+# CloudWatch Alarms and Dashboard ---------------------------------------
 
 resource "aws_cloudwatch_metric_alarm" "dlq_message_alarm" {
   alarm_name          = "${var.sqs_queue_name}-dlq-message-alarm"
@@ -379,55 +341,206 @@ resource "aws_cloudwatch_dashboard" "rekognition_pipeline" {
   })
 }
 
-resource "aws_apigatewayv2_api" "http_api" {
-  name          = var.api_name
-  protocol_type = "HTTP"
 
-  cors_configuration {
-    allow_headers = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"]
-    allow_methods = ["OPTIONS", "GET", "POST"]
-    allow_origins = ["*"]
-    expose_headers = ["ETag"]
-    max_age = 3600
-  }
+#POLICIES AND ROLES ---------------------------------------
+
+resource "aws_iam_role" "presigned_url_lambda_role" {
+  name = "${var.presigned_url_lambda_name}-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = local.lambda_tags
 }
 
-resource "aws_apigatewayv2_integration" "lambda_integration" {
-  api_id                 = aws_apigatewayv2_api.http_api.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.presigned_url.arn
-  integration_method     = "POST"
-  payload_format_version = "2.0"
+resource "aws_iam_role" "rekognition_lambda_role" {
+  name = "${var.rekognition_lambda_name}-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = local.lambda_tags
 }
 
-resource "aws_apigatewayv2_route" "label_route" {
-  api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /labels"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+resource "aws_iam_role_policy" "rekognition_lambda_policy" {
+  name = "${var.rekognition_lambda_name}-policy"
+  role = aws_iam_role.rekognition_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "rekognition:DetectLabels",
+          "rekognition:RecognizeCelebrities",
+          "rekognition:DetectModerationLabels"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "${aws_s3_bucket.image_bucket.arn}/*"
+      },
+      { 
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = "${aws_s3_bucket.image_bucket.arn}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query"
+        ]
+        Resource = "${aws_dynamodb_table.rekognition_results.arn}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:PutItem"
+        ]
+        Resource = [
+          "${aws_dynamodb_table.rekognition_results.arn}/*",
+          "${aws_dynamodb_table.connections.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "execute-api:Invoke",
+          "execute-api:ManageConnections",
+          "execute-api:SendMessage",
+          "execute-api:ReceiveMessage"
+        ]
+        Resource = "${aws_apigatewayv2_api.websocket.execution_arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = aws_sqs_queue.image_notifications.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
 }
 
-resource "aws_apigatewayv2_route" "celebrity_route" {
-  api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /celebrity"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+resource "aws_sqs_queue_policy" "allow_s3_send_message" {
+  queue_url = aws_sqs_queue.image_notifications.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowS3EventDelivery"
+        Effect = "Allow"
+        Principal = {
+          Service = "s3.amazonaws.com"
+        }
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.image_notifications.arn
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" = aws_s3_bucket.image_bucket.arn
+          }
+        }
+      }
+    ]
+  })
 }
 
-resource "aws_apigatewayv2_route" "results_route" {
-  api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /results"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
-}
+resource "aws_iam_role_policy" "presigned_url_lambda_policy" {
+  name = "${var.presigned_url_lambda_name}-policy"
+  role = aws_iam_role.presigned_url_lambda_role.id
 
-resource "aws_apigatewayv2_stage" "default" {
-  api_id      = aws_apigatewayv2_api.http_api.id
-  name        = "$default"
-  auto_deploy = true
-}
-
-resource "aws_lambda_permission" "allow_apigw_invocation" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.presigned_url.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject"
+        ]
+        Resource = [
+          "${aws_s3_bucket.image_bucket.arn}/*",
+          "${aws_s3_bucket.image_bucket.arn}/results/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = "${aws_s3_bucket.image_bucket.arn}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem"
+        ]
+        Resource = [aws_dynamodb_table.rekognition_results.arn, aws_dynamodb_table.connections.arn]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = aws_sqs_queue.image_notifications.arn
+      }
+    ]
+  })
 }
