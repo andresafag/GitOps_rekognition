@@ -80,6 +80,23 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --all-projects --severity-threshold=high
+  Zip_files:
+    name: Zip Lambda Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Zip Lambda Functions
+        run: |
+          cd lambda/pre_signed_url
+          zip -r ../../infrastructure/lambda/pre_signed_url.zip .
+          cd ../../
+
+          cd lambda/rekognition_consumer
+          zip -r ../../infrastructure/lambda/rekognition_consumer.zip .
+          cd ../../
+          echo "Lambda functions zipped successfully."
   IaC:
     name: Terraform 
     runs-on: ubuntu-latest
@@ -88,4 +105,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0" # O la versión que prefieras
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan
+
+      - name: Terraform Apply
+        # Es recomendable condicionar el apply a la rama principal
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve
     
