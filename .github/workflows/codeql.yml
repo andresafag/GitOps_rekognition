@@ -116,6 +116,9 @@ jobs:
           terraform_version: "1.7.0" # O la versión que prefieras
           terraform_wrapper: false
 
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+        
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
