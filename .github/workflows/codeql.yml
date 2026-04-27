@@ -89,6 +89,7 @@ jobs:
 
       - name: Zip Lambda Functions
         run: |
+          mkdir -p infrastructure/lambda
           cd lambda/pre_signed_url
           zip -r ../../infrastructure/lambda/pre_signed_url.zip .
           cd ../../
