@@ -3,9 +3,9 @@ import json
 import boto3
 import time
 import uuid
-from botocore.exceptions import ClientError
+
+domain_name = os.environ.get('API_DOMAIN_NAME')
 sqs = boto3.client('sqs')
-QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/688567305851/rekognition-image-queue"
 
 s3 = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
@@ -63,7 +63,7 @@ def handler(event, context):
     metadata = {
         'detection_mode': detection_mode,
         "connection_id": payload.get('WebSocketConnectionId'),
-        "domainName": "https://wh08cwowvj.execute-api.us-east-1.amazonaws.com/$default/",
+        "domainName": domain_name, #"https://wh08cwowvj.execute-api.us-east-1.amazonaws.com/$default/",
         "stage": "default",
         "image_id": lastpart
     }

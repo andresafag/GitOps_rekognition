@@ -1,5 +1,10 @@
-const apiBaseUrl = "https://fee7wqthba.execute-api.us-east-1.amazonaws.com";
-const socket = new WebSocket('wss://e7ghmoc3uh.execute-api.us-east-1.amazonaws.com/$default/');
+const apiBaseUrl = CONFIG.BASE_URL;
+const socket = new WebSocket(CONFIG.SOCKET);
+const wss = CONFIG.WSS;
+
+console.log('API Base URL:', apiBaseUrl);
+console.log('WebSocket URL:', CONFIG.SOCKET);
+console.log('WSS URL:', CONFIG.WSS);
 
 // 2. Handle connection opening
 socket.onopen = (event) => {
@@ -24,7 +29,7 @@ socket.onmessage = (event) => {
     }
         if (message.mensaje_servidor === 'resultados') {
         console.log('Procesando resultados...');
-        displayResults(message.info.items, message.info.mode, message.filename, message.type);
+        displayResults(message.info.items, message.info.mode, message.data, message.type);
         console.log('Resultados recibidos:', message);
     } else if (message.mensaje_servidor === 'explicit') {
         console.log('Mensaje completo:', message);
@@ -67,7 +72,7 @@ function displayResults(data, detectionMode, filename, type) {
   resultsEl.style.display = 'block';
   analysisDataEl.innerHTML = '';
   let imgElement = document.getElementById("mi-imagen");
-  imgElement.src = `data:${type};base64,${filename}`;
+  imgElement.src = ''; // Limpia la imagen antes de mostrar la nueva
     if (!imgElement) {
     imgElement = document.createElement('img');
     imgElement.id = "mi-imagen";
@@ -185,11 +190,11 @@ uploadButton.addEventListener('click', async () => {
       method: 'PUT',
       headers: {
         'Content-Type': file.type,
-        'x-amz-meta-connection_id': connection_id, // Include connection ID as metadata
+        'x-amz-meta-connection_id': connection_id, 
         'x-amz-meta-detection_mode': detectionMode,
-        'x-amz-meta-domainName': "https://e7ghmoc3uh.execute-api.us-east-1.amazonaws.com/$default/", // Include original filename as metadata
-        'x-amz-meta-image_id': data.lastpart, // Include image ID as metadata
-        'x-amz-meta-stage': 'default' // Include stage as metadata
+        'x-amz-meta-domainName': wss, 
+        'x-amz-meta-image_id': data.lastpart, 
+        'x-amz-meta-stage': 'default'
       },
       body: file,
     });

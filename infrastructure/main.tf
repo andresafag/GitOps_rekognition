@@ -32,7 +32,6 @@ resource "aws_apigatewayv2_api" "websocket" {
   name         = "${var.api_name}-websocket"
   protocol_type = "WEBSOCKET"
   route_selection_expression = "$request.body.action"
-
 }
 
 resource "aws_apigatewayv2_integration" "websocket_integration" {
@@ -187,6 +186,28 @@ data "archive_file" "rekognition_lambda" {
   output_path = "${path.module}/lambda/rekognition_consumer.zip"
 }
 
+resource "local_file" "web_config" {
+  # Ruta donde está tu código frontend
+  filename = "${path.module}/../src/config.js" 
+  
+  content  = <<-EOT
+    const CONFIG = {
+      BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
+      SOCKET: "${aws_apigatewayv2_api.websocket.api_endpoint}/$default",
+      WSS: "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
+    };
+  EOT
+}
+
+resource "aws_s3_bucket" "website" {
+  bucket = "website-documentsrek-123"
+}
+
+resource "aws_s3_bucket_website_configuration" "hosting" {
+  bucket = aws_s3_bucket.website.id
+  index_document { suffix = "index.html" }
+}
+
 resource "aws_lambda_function" "presigned_url" {
   function_name    = var.presigned_url_lambda_name
   filename         = data.archive_file.presigned_url_lambda.output_path
@@ -199,6 +220,7 @@ resource "aws_lambda_function" "presigned_url" {
     variables = {
       S3_BUCKET_NAME = aws_s3_bucket.image_bucket.bucket
       UPLOAD_PREFIX  = var.upload_prefix
+      API_DOMAIN_NAME = "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
     }
   }
 

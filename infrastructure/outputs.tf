@@ -27,3 +27,8 @@ output "websocket" {
   description = "websocket"
   value = aws_apigatewayv2_api.websocket.api_endpoint
 }
+
+output "websocket_url" {
+  description = "wss endpoint"
+  value = replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")
+}

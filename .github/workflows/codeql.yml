@@ -80,3 +80,12 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --all-projects --severity-threshold=high
+  IaC:
+    name: Terraform 
+    runs-on: ubuntu-latest
+    env:
+      TF_WORKING_DIR: infrastructure
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
