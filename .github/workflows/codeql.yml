@@ -101,6 +101,9 @@ jobs:
   IaC:
     name: Terraform 
     runs-on: ubuntu-latest
+    permissions: 
+      id-token: write
+      contents: read
     env:
       TF_WORKING_DIR: infrastructure
     steps:
