@@ -38,8 +38,8 @@ Results are pushed back to the frontend in real time.
 - [📡 API Endpoints](#-api-endpoints)
 - [📊 Monitoring](#-monitoring)
 - [🔐 Security](#-security)
-- [🧪 Future Improvements](#-future-improvements)
 - [📄 License](#-license)
+- [📄 Author](#-author)
 
 ---
 
@@ -239,6 +239,12 @@ Dead Letter Queue (DLQ) monitoring via SNS
 - ✅ Secure IAM roles and S3 encryption
 - ✅ Dead Letter Queue for failure handling
 - ✅ CI/CD pipeline with GitHub Actions
+
+🚀 Benefits
+🔐 Early detection of vulnerabilities
+📉 Reduced security risks in infrastructure and code
+⚡ Automated and consistent analysis
+🧩 Seamless integration with GitOps workflows
 
 ---
 
