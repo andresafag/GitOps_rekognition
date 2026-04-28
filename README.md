@@ -8,6 +8,23 @@
 
 ---
 
+## 🧭 Table of Contents
+
+- [📌 Overview](#-overview)
+- [🏗️ Architecture](#️-architecture)
+- [🧰 Tech Stack](#-tech-stack)
+- [📋 Prerequisites](#-prerequisites)
+- [📁 Project Structure](#-project-structure)
+- [⚙️ Deployment](#️-deployment)
+- [🔄 Workflow](#-workflow)
+- [📡 API Endpoints](#-api-endpoints)
+- [📊 Monitoring](#-monitoring)
+- [🔐 Security](#-security)
+- [📄 License](#-license)
+- [📄 Author](#-author)
+
+---
+
 ## 📌 Overview
 
 **GitOps_rekognition** provisions a complete serverless architecture on AWS that enables:
@@ -26,20 +43,36 @@ Results are pushed back to the frontend in real time.
 
 ---
 
-## 🧭 Table of Contents
 
-- [📌 Overview](#-overview)
-- [🏗️ Architecture](#️-architecture)
-- [🧰 Tech Stack](#-tech-stack)
-- [📋 Prerequisites](#-prerequisites)
-- [📁 Project Structure](#-project-structure)
-- [⚙️ Deployment](#️-deployment)
-- [🔄 Workflow](#-workflow)
-- [📡 API Endpoints](#-api-endpoints)
-- [📊 Monitoring](#-monitoring)
-- [🔐 Security](#-security)
-- [📄 License](#-license)
-- [📄 Author](#-author)
+## 🧰 Tech Stack
+
+<div align="center">
+
+| 🧩 Layer            | ⚙️ Technology                                                                 |
+|--------------------|------------------------------------------------------------------------------|
+| 🎨 Frontend        | `HTML5` · `CSS3` · `JavaScript (Vanilla)`                                    |
+| ⚡ Backend         | `AWS Lambda` · `Python 3.10`                                                 |
+| 🏗️ Infrastructure | `Terraform` (Infrastructure as Code)                                         |
+| ☁️ Cloud           | `Amazon Web Services (AWS)`                                                  |
+| 📦 Storage         | `Amazon S3`                                                                  |
+| 📬 Messaging       | `Amazon SQS` · `Amazon SNS`                                                  |
+| 🗄️ Database        | `Amazon DynamoDB`                                                            |
+| 🌐 API Layer       | `Amazon API Gateway` (HTTP + WebSocket)                                      |
+| 🧠 AI / ML         | `Amazon Rekognition`                                                         |
+| 🔐 Security        | `IAM Roles & Policies` · `Snyk` · `CodeQL`                                   |
+| 📊 Monitoring      | `Amazon CloudWatch`                                                          |
+
+</div>
+
+---
+
+### ✨ Highlights
+
+- **Fully Serverless Architecture** – No server management required  
+- **Event-Driven Design** – Scalable and decoupled components  
+- **Real-Time Communication** – Powered by WebSockets  
+- **AI-Powered Image Analysis** – Using AWS Rekognition  
+- **DevSecOps Ready** – Integrated security scanning with Snyk & CodeQL  
 
 ---
 
