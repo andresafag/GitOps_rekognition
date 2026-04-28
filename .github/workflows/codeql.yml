@@ -113,11 +113,8 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.7.0" # O la versión que prefieras
+          terraform_version: "1.7.0"
           terraform_wrapper: false
-
-      - name: Verify AWS Identity
-        run: aws sts get-caller-identity
         
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
