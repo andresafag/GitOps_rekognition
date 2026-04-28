@@ -110,6 +110,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::688567305851:role/web-rekognition
+          aws-region: us-east-1 # Asegúrate que sea la región de tu bucket S3
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
