@@ -55,6 +55,7 @@ function getSelectedDetectionMode() {
 function displayResultsExplicit(data) {
   resultsEl.style.display = 'block';
   analysisDataEl.innerHTML = '';
+  document.querySelector('#mi-imagen')?.removeAttribute('src');
 
   const section = document.createElement('div');
   section.className = 'result-section';
@@ -71,8 +72,8 @@ function displayResultsExplicit(data) {
 function displayResults(data, detectionMode, filename, type) {
   resultsEl.style.display = 'block';
   analysisDataEl.innerHTML = '';
-  let imgElement = document.getElementById("mi-imagen");
-  imgElement.src = ''; // Limpia la imagen antes de mostrar la nueva
+  let imgElement = '';
+  document.querySelector('#mi-imagen')?.removeAttribute('src');
     if (!imgElement) {
     imgElement = document.createElement('img');
     imgElement.id = "mi-imagen";
