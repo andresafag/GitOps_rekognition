@@ -200,19 +200,30 @@ resource "local_file" "web_config" {
 }
 
 resource "aws_s3_object" "website" {
-  bucket = var.website_bucket_name
-  key    = "config.js"
-  content = md5(<<EOT
-    const CONFIG = {
-      BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
-      SOCKET: "${aws_apigatewayv2_api.websocket.api_endpoint}/$default",
-      WSS: "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
-    };
-  EOT
-  )
-  tags   = local.lambda_tags
+  bucket       = var.website_bucket_name
+  key          = "config.js"
+  content_type = "application/javascript"
+  content = <<EOT
+const CONFIG = {
+  BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
+  SOCKET: "${aws_apigatewayv2_api.websocket.api_endpoint}/$default",
+  WSS: "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
+};
+EOT
   
+  # Use md5 for etag to detect content changes
+  etag = md5(<<EOT
+const CONFIG = {
+  BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
+  SOCKET: "${aws_apigatewayv2_api.websocket.api_endpoint}/$default",
+  WSS: "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
+};
+EOT
+  )
+  
+  tags = local.lambda_tags
 }
+
 
 resource "aws_s3_bucket_website_configuration" "hosting" {
   bucket = var.website_bucket_name
