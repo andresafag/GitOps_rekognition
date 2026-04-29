@@ -186,18 +186,6 @@ data "archive_file" "rekognition_lambda" {
   output_path = "${path.module}/lambda/rekognition_consumer.zip"
 }
 
-# resource "local_file" "web_config" {
-#   # Ruta donde está tu código frontend
-#   filename = "${path.module}/../src/config.js" 
-  
-#   content  = <<-EOT
-#     const CONFIG = {
-#       BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
-#       SOCKET: "${aws_apigatewayv2_api.websocket.api_endpoint}/$default",
-#       WSS: "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
-#     };
-#   EOT
-# }
 
 resource "aws_s3_object" "website" {
   bucket       = var.website_bucket_name
@@ -226,14 +214,18 @@ EOT
 
 
 
+# Data source for existing S3 bucket
+data "aws_s3_bucket" "website" {
+  bucket = var.website_bucket_name
+}
 
-# resource "aws_s3_bucket_website_configuration" "hosting" {
-#   bucket = var.website_bucket_name
-#   index_document { suffix = "index.html" }
-# }
+# Data source for existing hosted zone
+data "aws_route53_zone" "website" {
+  name = "rekoglabelify.com"
+}
 
 resource "aws_s3_bucket_policy" "website" {
-  bucket = aws_s3_bucket.website.id
+  bucket = data.aws_s3_bucket.website.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -245,11 +237,13 @@ resource "aws_s3_bucket_policy" "website" {
           AWS = aws_cloudfront_origin_access_identity.website.iam_arn
         }
         Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.website.arn}/*"
+        Resource = "${data.aws_s3_bucket.website.arn}/*"
       }
     ]
   })
 }
+
+
 
 # Data source for existing hosted zone
 data "aws_route53_zone" "website" {
@@ -275,7 +269,6 @@ resource "aws_acm_certificate" "website" {
   tags = local.lambda_tags
 }
 
-# DNS validation records for SSL certificate
 resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.website.domain_validation_options : dvo.domain_name => {
@@ -293,6 +286,7 @@ resource "aws_route53_record" "cert_validation" {
   zone_id         = data.aws_route53_zone.website.zone_id
 }
 
+
 # Certificate validation
 resource "aws_acm_certificate_validation" "website" {
   provider                = aws.us_east_1
@@ -307,7 +301,7 @@ resource "aws_acm_certificate_validation" "website" {
 # CloudFront Distribution
 resource "aws_cloudfront_distribution" "website" {
   origin {
-    domain_name = aws_s3_bucket.website.bucket_regional_domain_name
+    domain_name = data.aws_s3_bucket.website.bucket_regional_domain_name
     origin_id   = "S3-${var.website_bucket_name}"
     
     s3_origin_config {
@@ -395,7 +389,7 @@ resource "aws_route53_record" "website_www" {
 
 # Block public access (CloudFront will access via OAI)
 resource "aws_s3_bucket_public_access_block" "website" {
-  bucket = aws_s3_bucket.website.id
+  bucket = data.aws_s3_bucket.website.id
 
   block_public_acls       = true
   block_public_policy     = true
