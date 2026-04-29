@@ -49,5 +49,5 @@ variable "notification_email" {
 variable "website_bucket_name" {
   description = "Name of the S3 bucket that hosts the static website."
   type        = string
-  default     = "website-documentsrek-123"
+  default     = "rekoglabelify.com"
 }
