@@ -201,7 +201,7 @@ resource "local_file" "web_config" {
 
 resource "aws_s3_object" "website" {
   bucket = var.website_bucket_name
-  key    = "src/config.js"
+  key    = "config.js"
   content = md5(<<EOT
     const CONFIG = {
       BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
@@ -216,7 +216,7 @@ resource "aws_s3_object" "website" {
 
 resource "aws_s3_bucket_website_configuration" "hosting" {
   bucket = var.website_bucket_name
-  index_document { suffix = "src/index.html" }
+  index_document { suffix = "index.html" }
 }
 
 resource "aws_s3_bucket_public_access_block" "website_public_access" {
