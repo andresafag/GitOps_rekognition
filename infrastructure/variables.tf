@@ -45,3 +45,9 @@ variable "notification_email" {
   type        = string
   default     = "andresfelipeacostagarcia34@gmail.com"
 }
+
+variable "website_bucket_name" {
+  description = "Name of the S3 bucket that hosts the static website."
+  type        = string
+  default     = "website-documentsrek-123"
+}
