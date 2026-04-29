@@ -211,7 +211,6 @@ resource "aws_s3_object" "website" {
   EOT
   )
   tags   = local.lambda_tags
-  etag = filemd5("${path.module}/../src/config.js")
   
 }
 
