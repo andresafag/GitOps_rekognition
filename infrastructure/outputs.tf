@@ -32,3 +32,25 @@ output "websocket_url" {
   description = "wss endpoint"
   value = replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")
 }
+
+# outputs.tf
+output "cloudfront_distribution_id" {
+  description = "CloudFront Distribution ID"
+  value       = aws_cloudfront_distribution.website.id
+}
+
+output "cloudfront_domain_name" {
+  description = "CloudFront Distribution Domain Name"
+  value       = aws_cloudfront_distribution.website.domain_name
+}
+
+output "website_url" {
+  description = "Website URL"
+  value       = "https://rekoglabelify.com"
+}
+
+output "certificate_arn" {
+  description = "ACM Certificate ARN"
+  value       = aws_acm_certificate.website.arn
+}
+
