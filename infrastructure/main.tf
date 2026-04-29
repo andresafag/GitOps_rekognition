@@ -245,11 +245,6 @@ resource "aws_s3_bucket_policy" "website" {
 
 
 
-# Data source for existing hosted zone
-data "aws_route53_zone" "website" {
-  name = "rekoglabelify.com"
-}
-
 # Origin Access Identity for CloudFront
 resource "aws_cloudfront_origin_access_identity" "website" {
   comment = "OAI for ${var.website_bucket_name}"
