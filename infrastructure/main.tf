@@ -336,12 +336,6 @@ resource "aws_cloudfront_distribution" "website" {
     response_page_path = "/index.html"
   }
 
-  custom_error_response {
-    error_code         = 403
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-
   viewer_certificate {
     acm_certificate_arn = aws_acm_certificate_validation.website.certificate_arn
     ssl_support_method  = "sni-only"
@@ -391,6 +385,7 @@ resource "aws_s3_bucket_public_access_block" "website" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
 
 
 resource "aws_lambda_function" "presigned_url" {
