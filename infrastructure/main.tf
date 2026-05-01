@@ -351,7 +351,7 @@ resource "aws_cloudfront_distribution" "website" {
 }
 
 # Route 53 records pointing to CloudFront
-resource "aws_route53_record" "website" {
+data "aws_route53_record" "website" {
   zone_id = data.aws_route53_zone.website.zone_id
   name    = "rekoglabelify.com"
   type    = "A"

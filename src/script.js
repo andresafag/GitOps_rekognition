@@ -5,6 +5,10 @@ const wss = CONFIG.WSS;
 console.log('API Base URL:', apiBaseUrl);
 console.log('WebSocket URL:', CONFIG.SOCKET);
 console.log('WSS URL:', CONFIG.WSS);
+let intervalId;
+let statusEl;
+
+
 
 // 2. Handle connection opening
 socket.onopen = (event) => {
@@ -77,8 +81,8 @@ function displayResults(data, detectionMode, filename, type) {
     if (!imgElement) {
     imgElement = document.createElement('img');
     imgElement.id = "mi-imagen";
-    imgElement.style.maxWidth = "100%"; // Ajuste básico de estilo
-    resultsEl.prepend(imgElement); // Lo pone al principio del div de resultados
+    imgElement.style.maxWidth = "100%"; 
+    resultsEl.prepend(imgElement);
     }
 
     imgElement.src = `data:${type};base64,${filename}`;
@@ -99,6 +103,8 @@ function displayResults(data, detectionMode, filename, type) {
       `;
       section.appendChild(item);
       section.appendChild(imgElement);
+      clearInterval(intervalId);
+      statusEl.textContent = 'Done!';
   }
 
 
@@ -132,7 +138,8 @@ function displayResults(data, detectionMode, filename, type) {
         section.appendChild(item);
       }
       analysisDataEl.appendChild(section);
-
+      clearInterval(intervalId);
+      statusEl.textContent = 'Done!';
   }
 }
 
@@ -170,7 +177,7 @@ uploadButton.addEventListener('click', async () => {
       body: JSON.stringify({
         filename: file.name,
         contentType: file.type,
-        WebSocketConnectionId: connection_id, // Include connection ID in the request body
+        WebSocketConnectionId: connection_id,
       }),
     });
 
@@ -182,7 +189,6 @@ uploadButton.addEventListener('click', async () => {
     const data = await presignedResponse.json();
     console.log('Received presigned URL data:', data);
     const uploadUrl = data.uploadUrl;
-    const resultKey = data.resultKey;
 
     statusEl.textContent = '📤 Uploading image to secure storage...';
     console.log('Uploading to URL:', uploadUrl);
@@ -205,8 +211,20 @@ uploadButton.addEventListener('click', async () => {
       throw new Error(`Upload failed: ${uploadResponse.status} ${errorText}`);
     }
 
-    statusEl.textContent = `✅ Upload successful! Starting AI analysis...`;
+    statusEl.textContent = `✅ Upload successful! Starting AI analysis.....`;
     statusEl.className = 'status-message success';
+    const randomMessages = [
+      '🔍 Analyzing the image...',
+      '🤖 AI is working on it...',
+      '⏳ This may take a moment...',
+      '🔬 Examining the details...',
+      '🧠 Processing with AI...',
+      '🚀 Almost there...'
+    ];
+    intervalId = setInterval(() => {
+      const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+      statusEl.textContent = randomMessage;
+    }, 1900);
 
 
   } catch (error) {

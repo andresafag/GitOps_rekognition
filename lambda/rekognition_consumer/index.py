@@ -1,6 +1,6 @@
 import json
+from pathlib import Path
 import boto3
-import urllib.parse
 import base64
 import os
 from datetime import datetime
@@ -29,6 +29,13 @@ def handler(event, context):
                         'Name': object_key
                         }
                     }
+                    file_type = Path(object_key).suffix
+                    if file_type not in ['.jpg', '.jpeg', '.png']:
+                        print(f"Archivo {object_key} no es una imagen válida.")
+                        return {
+                            'statusCode': 400,
+                            'body': json.dumps({'message': 'Archivo no es una imagen válida.'})
+                        }
 
                     metadata = s3.head_object(Bucket=bucket_name, Key=object_key)
                     metadatos = metadata.get('Metadata', {})
@@ -42,7 +49,7 @@ def handler(event, context):
                     encoded_image = base64.b64encode(image_bytes).decode('utf-8')
                     payload = {
                         "filename": object_key,
-                        "type": "image/jpeg",
+                        "type": file_type,
                         "data": encoded_image,
                         "mensaje_servidor": "resultados",
                         "info": formatted
