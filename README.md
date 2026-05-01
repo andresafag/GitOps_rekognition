@@ -112,6 +112,7 @@ Lambda (Rekognition Consumer)
                 │
                 ▼
           Real-time Frontend
+```
 
 Prerequisites
 
@@ -125,7 +126,7 @@ Ensure you have the following installed and configured:
 🧠 Basic understanding of serverless architectures
 ---
 ## 📁 Project Structure
-
+```
 GitOps_rekognition/
 │
 ├── .github/
@@ -157,6 +158,7 @@ GitOps_rekognition/
 │   └── style.css
 │
 └── README.md
+```
 
 ---
 
@@ -226,7 +228,7 @@ GitHub Actions Pipeline
     ├── Terraform IaC Scan
     ├── Python Code SAST
     └── Open Source Dependency Scan
-
+```
 ---
 
 ## 🔄 Workflow
