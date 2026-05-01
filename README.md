@@ -29,6 +29,7 @@
   - [🔄 Workflow](#-workflow)
   - [📡 API Endpoints](#-api-endpoints)
   - [📊 Monitoring](#-monitoring)
+  - [Live Demo](#live-demo)
   - [🧪 Features](#-features)
   - [License](#license)
   - [✍️ Author](#️-author)
@@ -275,7 +276,7 @@ Dead Letter Queue (DLQ) monitoring via SNS
 
 ---
 
-Live Demo
+##  Live Demo
 
 👉 [Demo](www.rekoglabelify.com)
 
