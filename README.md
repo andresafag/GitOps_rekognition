@@ -278,7 +278,7 @@ Dead Letter Queue (DLQ) monitoring via SNS
 
 ##  Live Demo
 
-👉 [Demo](www.rekoglabelify.com)
+👉 [Demo](https://rekoglabelify.com)
 
 ## 🧪 Features
 
