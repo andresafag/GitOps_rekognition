@@ -6,7 +6,7 @@ console.log('API Base URL:', apiBaseUrl);
 console.log('WebSocket URL:', CONFIG.SOCKET);
 console.log('WSS URL:', CONFIG.WSS);
 let intervalId;
-let statusEl;
+
 
 
 

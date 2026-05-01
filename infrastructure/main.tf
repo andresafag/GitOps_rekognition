@@ -363,10 +363,6 @@ resource "aws_route53_record" "website" {
   }
 }
 
-import {
-  to = aws_route53_record.website
-  id = "Z04644041H523J0F0FJDJ_rekoglabelify.com_A"
-}
 
 resource "aws_route53_record" "website_www" {
   zone_id = data.aws_route53_zone.website.zone_id

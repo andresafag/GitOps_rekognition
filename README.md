@@ -10,18 +10,28 @@
 
 ## 🧭 Table of Contents
 
-- [📌 Overview](#-overview)
-- [🏗️ Architecture](#️-architecture)
-- [🧰 Tech Stack](#-tech-stack)
-- [📋 Prerequisites](#-prerequisites)
-- [📁 Project Structure](#-project-structure)
-- [⚙️ Deployment](#️-deployment)
-- [🔄 Workflow](#-workflow)
-- [📡 API Endpoints](#-api-endpoints)
-- [📊 Monitoring](#-monitoring)
-- [🔐 Security](#-security)
-- [📄 License](#-license)
-- [📄 Author](#-author)
+- [� GitOps\_rekognition](#-gitops_rekognition)
+  - [🧭 Table of Contents](#-table-of-contents)
+  - [📌 Overview](#-overview)
+  - [🧰 Tech Stack](#-tech-stack)
+    - [✨ Highlights](#-highlights)
+  - [🏗️ Architecture](#️-architecture)
+  - [🧠 Basic understanding of serverless architectures](#-basic-understanding-of-serverless-architectures)
+  - [📁 Project Structure](#-project-structure)
+  - [⚙️ Deployment](#️-deployment)
+  - [🔐 CI/CD \& Security Scanning](#-cicd--security-scanning)
+    - [🛡️ CodeQL Analysis](#️-codeql-analysis)
+    - [🔎 Snyk Security Scans](#-snyk-security-scans)
+      - [🏗️ Infrastructure as Code (IaC)](#️-infrastructure-as-code-iac)
+      - [🧠 Static Application Security Testing (SAST)](#-static-application-security-testing-sast)
+      - [📦 Open Source Dependency Scanning](#-open-source-dependency-scanning)
+    - [⚙️ Pipeline Overview](#️-pipeline-overview)
+  - [🔄 Workflow](#-workflow)
+  - [📡 API Endpoints](#-api-endpoints)
+  - [📊 Monitoring](#-monitoring)
+  - [🧪 Features](#-features)
+  - [License](#license)
+  - [✍️ Author](#️-author)
 
 ---
 
@@ -261,6 +271,12 @@ Dead Letter Queue (DLQ) monitoring via SNS
 📩 DLQ for failed message handling
 🔑 Secure pre-signed URLs for uploads
 
+---
+
+Live Demo
+
+👉 [Demo](rekoglabelify.com)
+
 ## 🧪 Features
 
 - ✅ Celebrity recognition
@@ -285,5 +301,7 @@ Dead Letter Queue (DLQ) monitoring via SNS
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Author
+## ✍️ Author
 
+**Andrés Acosta**
+*  [My LinkedIn profile](www.linkedin.com/in/andrés-acosta-203923238)
