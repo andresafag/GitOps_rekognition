@@ -10,7 +10,7 @@
 
 ## 🧭 Table of Contents
 
-- [� GitOps\_rekognition](#-gitops_rekognition)
+- [🚀 GitOps\_rekognition](#-gitops_rekognition)
   - [🧭 Table of Contents](#-table-of-contents)
   - [📌 Overview](#-overview)
   - [🧰 Tech Stack](#-tech-stack)
@@ -304,4 +304,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## ✍️ Author
 
 **Andrés Acosta**
-*  [My LinkedIn profile](www.linkedin.com/in/andrés-acosta-203923238)
+*  [My LinkedIn profile](https://linkedin.com/in/andrés-acosta-203923238)
