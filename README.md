@@ -5,6 +5,7 @@
 ![AWS](https://img.shields.io/badge/aws-orange.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHBhdGggZD0ibTE4LjggMTEuNC0uOC0uMS0uOC0uM0gxN2wtLjEuMnYuNWwuMi4yLjguMyAxIC4xIDEtLjEuNy0uNC41LS42LjItLjgtLjMtLjktMS0uNi0xLS4zLS43LS40LS4yLS41LjMtLjYuOS0uMSAxLjIuMmguM2wuMi0uMXYtLjRsLS4xLS4yLS4yLS4yaC0uM0wyMCA2bC0uNC0uMUgxOWwtLjguMS0uNy40LS41LjUtLjIuNy4zIDFhMiAyIDAgMCAwIDEuMS43bDEgLjMuNy40LjIuNGExIDEgMCAwIDEtLjQuN3ptLTUuOS00Ljl2LS4zaC0xLjJ2LjNsLTEgNC40LTEuMi00LjQtLjItLjNoLS45bC0uMS4xdi4zbDEuNiA1LjEuMS4zaDEuMWwuMS0uMyAxLTQuMiAxIDQuMi4xLjNoMS4xbC4yLS4zIDEuNi01LjF2LS4ybC0uMi0uMmgtLjlsLS4xLjMtMSA0LjV6TTUuOCA4LjZINWEyIDIgMCAwIDAtMS43LjUgMiAyIDAgMCAwLS42IDEuNCAyIDIgMCAwIDAgLjUgMS4yIDIgMiAwIDAgMCAxLjMuNSAzIDMgMCAwIDAgMi0uOWwuMi40LjMuM2guNGwuNC0uMy4xLS4ydi0uMWwtLjItLjVWOC4yYTIgMiAwIDAgMC0uNi0xLjZBMiAyIDAgMCAwIDUuMyA2bC0xIC4xLS44LjMtLjIuMlY3cTAgLjMuMi4yaC4zbC42LS4zaC43YTIgMiAwIDAgMSAxLjEuMmwuMyAxdi42em0uNyAxdi44bC0uMy40LS42LjQtLjcuMi0uNy0uMy0uMi0uNy4zLS44IDEtLjJINnpNMTkuOSAxNWEyMCAyMCAwIDAgMS03LjYgMS41QTIwIDIwIDAgMCAxIDIuMyAxNHEtLjQgMC0uMi4zQTE1IDE1IDAgMCAwIDEyIDE4YTE0IDE0IDAgMCAwIDguMS0yLjVxLjMtLjYtLjMtLjUiLz48cGF0aCBkPSJNMTguNCAxNHEtLjMuMyAwIC40Yy43LS4xIDIuMy0uMyAyLjYgMHMtLjMgMS45LS42IDIuNXEwIC4zLjMuMmE0IDQgMCAwIDAgMS4yLTMuNCA0IDQgMCAwIDAtMy41LjQiLz48L3N2Zz4=)
 ![Javascript](https://img.shields.io/badge/javascript-black?style=for-the-badge&logo=javascript)
 ![Snyk](https://img.shields.io/badge/snyk-black.svg?style=for-the-badge&logo=snyk)
+![Githubactions](https://img.shields.io/badge/github_actions-black.svg?style=for-the-badge&logo=githubactions)
 
 
 > **Infrastructure as Code (IaC)** project using Terraform to deploy a fully event-driven image processing pipeline powered by AWS Rekognition.
@@ -20,7 +21,6 @@
     - [✨ Highlights](#-highlights)
   - [🏗️ Architecture](#️-architecture)
   - [📁 Project Structure](#-project-structure)
-  - [⚙️ Deployment](#️-deployment)
   - [🔐 CI/CD \& Security Scanning](#-cicd--security-scanning)
     - [🛡️ CodeQL Analysis](#️-codeql-analysis)
     - [🔎 Snyk Security Scans](#-snyk-security-scans)
@@ -69,7 +69,6 @@ Results are pushed back to the frontend in real time.
 | ☁️ Cloud           | `Amazon Web Services (AWS)`                                                  |
 | 📦 Storage         | `Amazon S3`                                                                  |
 | 📬 Messaging       | `Amazon SQS` · `Amazon SNS`                                                  |
-| 🗄️ Database        | `Amazon DynamoDB`                                                            |
 | 🌐 API Layer       | `Amazon API Gateway` (HTTP + WebSocket)                                      |
 | 🧠 AI / ML         | `Amazon Rekognition`                                                         |
 | 🔐 Security        | `IAM Roles & Policies` · `Snyk` · `CodeQL`                                   |
@@ -110,7 +109,6 @@ SQS Queue ───► DLQ (Failures)
 Lambda (Rekognition Consumer)
    │
    ├──► AWS Rekognition
-   ├──► DynamoDB (Store Results)
    └──► API Gateway (WebSocket)
                 │
                 ▼
@@ -152,16 +150,6 @@ GitOps_rekognition/
 │
 └── README.md
 ```
-
----
-
-## ⚙️ Deployment
-
-terraform init
-
-terraform plan
-
-terraform apply
 
 ---
 
@@ -234,7 +222,6 @@ GitHub Actions Pipeline
 6. Rekognition Consumer Lambda processes the SQS message, analyzes the image with AWS Rekognition
     Detects labels
     Recognizes celebrities
-Results stored in DynamoDB
 WebSocket pushes results to frontend in real time
 
 ---

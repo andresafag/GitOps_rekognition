@@ -1,0 +1,136 @@
+name: "CodeQL, Snyk scanning and Terraform deployment"
+
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  Analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - language: javascript-typescript
+          build-mode: none
+        - language: python
+          build-mode: none
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+
+    - name: Run manual build steps
+      if: matrix.build-mode == 'manual'
+      shell: bash
+      run: exit 1
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:${{matrix.language}}"
+        
+  Security:
+    name: Snyk Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Escaneo de Infraestructura (Terraform)
+      - name: Snyk IaC (Terraform) Scan
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      # Escaneo de Código (Python SAST) 
+      # Este paso NO requiere requirements.txt, analiza tu código Lambda directamente
+      - name: Snyk Code (SAST) Scan
+        uses: snyk/actions/python@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test
+          args: --severity-threshold=high
+
+      # Escaneo de dependencias (Solo si añades un requirements.txt después)
+      - name: Snyk Open Source Scan
+        uses: snyk/actions/python@master
+        continue-on-error: true # No detiene el flujo si no encuentra archivos de dependencias
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects --severity-threshold=high
+          
+  Zip_files:
+    name: Zip Lambda Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Zip Lambda Functions
+        run: |
+          mkdir -p infrastructure/lambda
+          cd lambda/pre_signed_url
+          zip -r ../../infrastructure/lambda/pre_signed_url.zip .
+          cd ../../
+
+          cd lambda/rekognition_consumer
+          zip -r ../../infrastructure/lambda/rekognition_consumer.zip .
+          cd ../../
+          echo "Lambda functions zipped successfully."
+  IaC:
+    name: Terraform 
+    runs-on: ubuntu-latest
+    needs: Zip_files
+    permissions: 
+      id-token: write
+      contents: read
+    env:
+      TF_WORKING_DIR: infrastructure
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::688567305851:role/web-rekognition
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+          terraform_wrapper: false
+        
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan
+
+      - name: Terraform Apply
+        # Es recomendable condicionar el apply a la rama principal
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -parallelism=20 --auto-approve
+    
