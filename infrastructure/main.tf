@@ -707,29 +707,6 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:Query"
-        ]
-        Resource = "${aws_dynamodb_table.rekognition_results.arn}"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:Query",
-          "dynamodb:DeleteItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:PutItem"
-        ]
-        Resource = [
-          "${aws_dynamodb_table.rekognition_results.arn}/*",
-          "${aws_dynamodb_table.connections.arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "execute-api:Invoke",
           "execute-api:ManageConnections",
           "execute-api:SendMessage",
@@ -817,13 +794,6 @@ resource "aws_iam_role_policy" "presigned_url_lambda_policy" {
           "logs:PutLogEvents"
         ]
         Resource = "arn:aws:logs:*:*:*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:PutItem"
-        ]
-        Resource = [aws_dynamodb_table.rekognition_results.arn, aws_dynamodb_table.connections.arn]
       },
       {
         Effect = "Allow"
