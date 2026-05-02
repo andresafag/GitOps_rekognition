@@ -29,8 +29,8 @@ resource "aws_apigatewayv2_integration" "lambda_integration_presigned_url" {
 }
 
 resource "aws_apigatewayv2_api" "websocket" {
-  name         = "${var.api_name}-websocket"
-  protocol_type = "WEBSOCKET"
+  name                       = "${var.api_name}-websocket"
+  protocol_type              = "WEBSOCKET"
   route_selection_expression = "$request.body.action"
 }
 
@@ -74,12 +74,42 @@ resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http_api.id
   name        = "$default"
   auto_deploy = true
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
+    format = jsonencode({
+      requestId      = "$context.requestId",
+      ip             = "$context.identity.sourceIp",
+      caller         = "$context.identity.caller",
+      user           = "$context.identity.user",
+      requestTime    = "$context.requestTime",
+      httpMethod     = "$context.httpMethod",
+      resourcePath   = "$context.resourcePath",
+      status         = "$context.status",
+      protocol       = "$context.protocol",
+      responseLength = "$context.responseLength"
+    })
+  }
 }
 
 resource "aws_apigatewayv2_stage" "websocket_stage" {
   api_id      = aws_apigatewayv2_api.websocket.id
   name        = "$default"
   auto_deploy = true
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
+    format = jsonencode({
+      requestId      = "$context.requestId",
+      ip             = "$context.identity.sourceIp",
+      caller         = "$context.identity.caller",
+      user           = "$context.identity.user",
+      requestTime    = "$context.requestTime",
+      httpMethod     = "$context.httpMethod",
+      resourcePath   = "$context.resourcePath",
+      status         = "$context.status",
+      protocol       = "$context.protocol",
+      responseLength = "$context.responseLength"
+    })
+  }
 }
 
 # S3 Bucket for image uploads ---------------------------------------
@@ -147,31 +177,31 @@ resource "aws_sqs_queue" "image_notifications" {
 
 # DynamoDB Table for storing Rekognition results
 
-resource "aws_dynamodb_table" "rekognition_results" {
-  name         = "mapping-routes"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+# resource "aws_dynamodb_table" "rekognition_results" {
+#   name         = "mapping-routes"
+#   billing_mode = "PAY_PER_REQUEST"
+#   hash_key     = "id"
 
-  attribute {
-    name = "id"
-    type = "S"
-  }
+#   attribute {
+#     name = "id"
+#     type = "S"
+#   }
 
-  tags = local.lambda_tags
-}
+#   tags = local.lambda_tags
+# }
 
-resource "aws_dynamodb_table" "connections" {
-  name         = "websocket-connections"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+# resource "aws_dynamodb_table" "connections" {
+#   name         = "websocket-connections"
+#   billing_mode = "PAY_PER_REQUEST"
+#   hash_key     = "id"
 
-  attribute {
-    name = "id"
-    type = "S"
-  }
+#   attribute {
+#     name = "id"
+#     type = "S"
+#   }
 
-  tags = local.lambda_tags
-}
+#   tags = local.lambda_tags
+# }
 # Lambda functions and related resources ---------------------------------------
 
 data "archive_file" "presigned_url_lambda" {
@@ -191,14 +221,14 @@ resource "aws_s3_object" "website" {
   bucket       = var.website_bucket_name
   key          = "config.js"
   content_type = "application/javascript"
-  content = <<EOT
+  content      = <<EOT
 const CONFIG = {
   BASE_URL: "${aws_apigatewayv2_api.http_api.api_endpoint}",
   SOCKET: "${aws_apigatewayv2_api.websocket.api_endpoint}/$default",
   WSS: "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
 };
 EOT
-  
+
   # Use md5 for etag to detect content changes
   etag = md5(<<EOT
 const CONFIG = {
@@ -208,7 +238,7 @@ const CONFIG = {
 };
 EOT
   )
-  
+
   tags = local.lambda_tags
 }
 
@@ -231,8 +261,8 @@ resource "aws_s3_bucket_policy" "website" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowCloudFrontAccess"
-        Effect    = "Allow"
+        Sid    = "AllowCloudFrontAccess"
+        Effect = "Allow"
         Principal = {
           AWS = aws_cloudfront_origin_access_identity.website.iam_arn
         }
@@ -244,7 +274,6 @@ resource "aws_s3_bucket_policy" "website" {
 }
 
 
-
 # Origin Access Identity for CloudFront
 resource "aws_cloudfront_origin_access_identity" "website" {
   comment = "OAI for ${var.website_bucket_name}"
@@ -253,9 +282,9 @@ resource "aws_cloudfront_origin_access_identity" "website" {
 # SSL Certificate (must be in us-east-1 for CloudFront)
 resource "aws_acm_certificate" "website" {
   provider                  = aws.us_east_1
-  domain_name              = "rekoglabelify.com"
+  domain_name               = "rekoglabelify.com"
   subject_alternative_names = ["www.rekoglabelify.com"]
-  validation_method        = "DNS"
+  validation_method         = "DNS"
 
   lifecycle {
     create_before_destroy = true
@@ -298,7 +327,7 @@ resource "aws_cloudfront_distribution" "website" {
   origin {
     domain_name = data.aws_s3_bucket.website.bucket_regional_domain_name
     origin_id   = "S3-${var.website_bucket_name}"
-    
+
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.website.cloudfront_access_identity_path
     }
@@ -307,7 +336,7 @@ resource "aws_cloudfront_distribution" "website" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  
+
   aliases = ["rekoglabelify.com", "www.rekoglabelify.com"]
 
   default_cache_behavior {
@@ -349,6 +378,46 @@ resource "aws_cloudfront_distribution" "website" {
 
   tags = local.lambda_tags
 }
+
+resource "aws_wafv2_web_acl" "cloudfront_acl" {
+  name        = "cloudfront-acl"
+  description = "WAF ACL for CloudFront distribution"
+  scope       = "CLOUDFRONT"
+
+  default_action {
+    allow {}
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "cloudfrontACL"
+    sampled_requests_enabled   = true
+  }
+
+  rule {
+    name     = "AWS-AWSManagedRulesCommonRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "commonRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+}
+
 
 # Route 53 records pointing to CloudFront
 resource "aws_route53_record" "website" {
@@ -399,8 +468,8 @@ resource "aws_lambda_function" "presigned_url" {
 
   environment {
     variables = {
-      S3_BUCKET_NAME = aws_s3_bucket.image_bucket.bucket
-      UPLOAD_PREFIX  = var.upload_prefix
+      S3_BUCKET_NAME  = aws_s3_bucket.image_bucket.bucket
+      UPLOAD_PREFIX   = var.upload_prefix
       API_DOMAIN_NAME = "${replace(aws_apigatewayv2_stage.websocket_stage.invoke_url, "wss://", "https://")}"
     }
   }
@@ -441,7 +510,20 @@ resource "aws_lambda_permission" "allow_apigw_invocation" {
 }
 
 resource "aws_sns_topic" "dlq_alert" {
-  name = "${var.sqs_queue_name}-dlq-alert"
+  name              = "${var.sqs_queue_name}-dlq-alert"
+  kms_master_key_id = aws_kms_key.sns_encryption_key.arn
+}
+
+resource "aws_kms_key" "sns_encryption_key" {
+  description             = "KMS key for encrypting SNS topic"
+  deletion_window_in_days = 10
+
+}
+
+resource "aws_s3_bucket_logging" "bucket_logs" {
+  bucket        = aws_s3_bucket.image_bucket.id
+  target_bucket = aws_s3_bucket.image_bucket.id
+  target_prefix = "logs/"
 }
 
 resource "aws_sns_topic_subscription" "dlq_alert_email" {
@@ -544,6 +626,12 @@ resource "aws_cloudwatch_dashboard" "rekognition_pipeline" {
   })
 }
 
+resource "aws_cloudwatch_log_group" "api_gateway_logs" {
+  name              = "/aws/api-gateway/logs"
+  retention_in_days = 14
+  tags              = local.lambda_tags
+}
+
 
 #POLICIES AND ROLES ---------------------------------------
 
@@ -608,7 +696,7 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
         ]
         Resource = "${aws_s3_bucket.image_bucket.arn}/*"
       },
-      { 
+      {
         Effect = "Allow"
         Action = [
           "s3:ListBucket",

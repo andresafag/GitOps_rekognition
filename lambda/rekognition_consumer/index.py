@@ -90,10 +90,6 @@ def handler(event, context):
                             })
                     print(formatted)
 
-                    # mensaje=json.dumps({
-                    #     "mensaje_servidor": "resultados",
-                    #     "info": formatted
-                    # })
 
                     gatewayapi = boto3.client(
                         "apigatewaymanagementapi", 
@@ -104,6 +100,8 @@ def handler(event, context):
                         ConnectionId=metadatos.get('connection_id'),
                         Data=json.dumps(payload)  
                     )
+
+                    s3.delete_object(Bucket=bucket_name, Key=object_key)
                     
                 except KeyError as e:
                     print(f"Error: No se encontró la clave {e} en el evento de S3")

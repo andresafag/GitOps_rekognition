@@ -150,6 +150,11 @@ uploadButton.addEventListener('click', async () => {
     statusEl.className = 'status-message error';
     return;
   }
+  if (file.size > 250 * 1024 * 1024) {
+    statusEl.textContent = '⚠️ File size exceeds 5MB limit. Please select a smaller image.';
+    statusEl.className = 'status-message error';
+    return;
+  }
 
   // Validate file type
   const allowedTypes = ['image/jpeg', 'image/png'];
