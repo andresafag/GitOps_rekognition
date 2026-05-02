@@ -635,6 +635,21 @@ resource "aws_cloudwatch_log_group" "api_gateway_logs" {
 
 #POLICIES AND ROLES ---------------------------------------
 
+resource "aws_iam_role" "apigw_log_role" {
+  name = "apigw-cloudwatch-logs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
 resource "aws_iam_role" "presigned_url_lambda_role" {
   name = "${var.presigned_url_lambda_name}-role"
 
@@ -806,20 +821,7 @@ resource "aws_iam_role_policy" "presigned_url_lambda_policy" {
   })
 }
 
-resource "aws_iam_role" "apigw_log_role" {
-  name = "apigw-cloudwatch-logs-role"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "apigateway.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
 
 resource "aws_iam_role_policy_attachment" "apigw_log_attach" {
   role       = aws_iam_role.apigw_log_role.name
