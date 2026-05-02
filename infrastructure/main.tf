@@ -89,6 +89,7 @@ resource "aws_apigatewayv2_stage" "default" {
       responseLength = "$context.responseLength"
     })
   }
+  depends_on = [aws_api_gateway_account.account]
 }
 
 resource "aws_apigatewayv2_stage" "websocket_stage" {
@@ -110,6 +111,8 @@ resource "aws_apigatewayv2_stage" "websocket_stage" {
       responseLength = "$context.responseLength"
     })
   }
+
+  depends_on = [aws_api_gateway_account.account]
 }
 
 # S3 Bucket for image uploads ---------------------------------------
