@@ -805,3 +805,27 @@ resource "aws_iam_role_policy" "presigned_url_lambda_policy" {
     ]
   })
 }
+
+resource "aws_iam_role" "apigw_log_role" {
+  name = "apigw-cloudwatch-logs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "apigw_log_attach" {
+  role       = aws_iam_role.apigw_log_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+resource "aws_apigatewayv2_account" "account" {
+  cloudwatch_role_arn = aws_iam_role.apigw_log_role.arn
+}
