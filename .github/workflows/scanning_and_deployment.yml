@@ -123,14 +123,18 @@ jobs:
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
-
-      - name: Terraform Plan
+        
+      - name: Terraform destroy
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan
+        run: terraform destroy -parallelism=20 --auto-approve
 
-      - name: Terraform Apply
-        # Es recomendable condicionar el apply a la rama principal
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -parallelism=20 --auto-approve
+      # - name: Terraform Plan
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: terraform plan
+
+      # - name: Terraform Apply
+      #   # Es recomendable condicionar el apply a la rama principal
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: terraform apply -parallelism=20 --auto-approve
     
