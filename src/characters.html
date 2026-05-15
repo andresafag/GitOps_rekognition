@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historical Figures Explorer</title>
+  <script src="nav.js" defer></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div id="navbar-placeholder"></div>
+    <h1>🏛️ Historical Figures Explorer</h1>
+    <p>Viaja en el tiempo y descubre la vida de grandes personajes</p>
+  </header>
+
+  <section class="hero">
+    <div class="carousel">
+      <div class="carousel-container">
+        <div class="carousel-slide active">
+          <img src="https://unsplash.com" alt="History 1">
+          <div class="carousel-caption">Explora líderes de la antigua Roma</div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://unsplash.com" alt="History 2">
+          <div class="carousel-caption">Grandes pensadores del Renacimiento</div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://unsplash.com" alt="History 3">
+          <div class="carousel-caption">Científicos que cambiaron el mundo</div>
+        </div>
+      </div>
+      <button class="carousel-btn prev">❮</button>
+      <button class="carousel-btn next">❯</button>
+      <div class="carousel-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="upload-section">
+      <h2>Busca un Personaje</h2>
+      <div class="search-container">
+        <input type="text" id="figureName" placeholder="Ej: Albert Einstein, Cleopatra, Napoleon..." />
+        <button id="searchButton">🔍 Buscar Historia</button>
+      </div>
+      <div id="status" class="status-message"></div>
+    </section>
+
+    <section id="results" class="results-section" style="display: none;">
+      <h2>📜 Información Encontrada</h2>
+      <div id="historicalData" class="analysis-results">
+        <!-- Los datos del API se inyectarán aquí -->
+      </div>
+    </section>
+  </main>
+    <script type="module" src="api_search.js"></script>
+</body>
+</html>

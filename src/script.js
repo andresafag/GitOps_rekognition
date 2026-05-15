@@ -29,7 +29,7 @@ socket.onmessage = (event) => {
         if (message.connectionId) {
         connection_id = message.connectionId;
         console.log('ID de conexión listo:', connection_id);
-        return; // Salimos de la función, no hay nada que mostrar aún
+        return; 
     }
         if (message.mensaje_servidor === 'resultados') {
         console.log('Procesando resultados...');
@@ -47,7 +47,6 @@ socket.onmessage = (event) => {
 
 
 
-// 4. Handle errors and closing [2, 3]
 socket.onerror = (error) => console.error('WebSocket Error:', error);
 socket.onclose = () => console.log('Disconnected from WebSocket');
 
@@ -74,18 +73,22 @@ function displayResultsExplicit(data) {
 }
 
 function displayResults(data, detectionMode, filename, type) {
+  let resultsEl = document.querySelector('#results');
   resultsEl.style.display = 'block';
   analysisDataEl.innerHTML = '';
-  let imgElement = '';
-  document.querySelector('#mi-imagen')?.removeAttribute('src');
-    if (!imgElement) {
-    imgElement = document.createElement('img');
-    imgElement.id = "mi-imagen";
-    imgElement.style.maxWidth = "100%"; 
-    resultsEl.prepend(imgElement);
-    }
 
-    imgElement.src = `data:${type};base64,${filename}`;
+  let imgElement = document.querySelector('#uploadedImage');
+  if (!imgElement) {
+    imgElement = document.createElement('img');
+    imgElement.id = 'uploadedImage';
+    imgElement.alt = 'Analyzed image';
+    imgElement.style.maxWidth = '100%';
+
+    const imagePreview = resultsEl.querySelector('.image-preview') || resultsEl;
+    imagePreview.prepend(imgElement);
+  }
+
+  imgElement.src = `data:${type};base64,${filename}`;
 
   if (detectionMode === 'labels') {
       const section = document.createElement('div');
@@ -150,6 +153,7 @@ uploadButton.addEventListener('click', async () => {
     statusEl.className = 'status-message error';
     return;
   }
+
   if (file.size > 250 * 1024 * 1024) {
     statusEl.textContent = '⚠️ File size exceeds 5MB limit. Please select a smaller image.';
     statusEl.className = 'status-message error';

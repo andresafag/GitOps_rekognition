@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekognition Upload</title>
+  <script src="nav.js" defer></script>
+  <script src="config.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div id="navbar-placeholder"></div>
+    <h1>🖼️ AI Image Analyzer</h1>
+    <p>Discover what's in your images with advanced AI detection</p>
+  </header>
+
+  <section class="hero">
+<div class="carousel">
+  <div class="carousel-container">
+    <!-- Slide 1 -->
+    <div class="carousel-slide active">
+      <video autoplay muted loop playsinline>
+        <source src="https://vimeo.com" type="video/mp4">
+      </video>
+      <div class="carousel-caption">Upload your videos for instant analysis</div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="carousel-slide">
+      <video autoplay muted loop playsinline>
+        <source src="https://vimeo.com" type="video/mp4">
+      </video>
+      <div class="carousel-caption">Detect labels, objects, and scenes</div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="carousel-slide">
+      <video autoplay muted loop playsinline>
+        <source src="https://vimeo.com" type="video/mp4">
+      </video>
+      <div class="carousel-caption">Recognize celebrities and faces</div>
+    </div>
+  </div>
+
+  <button class="carousel-btn prev">❮</button>
+  <button class="carousel-btn next">❯</button>
+  <div class="carousel-dots">
+    <span class="dot active"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+</div>
+
+  </section>
+
+  <main>
+    <section class="upload-section">
+      <h2>Analyze Your Video</h2>
+
+      <label class="file-upload">
+        <input type="file" id="fileInput" accept="video/*" />
+        <div class="upload-area">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">Choose a video or drag & drop</div>
+          <div class="upload-hint">ℹ️ Only MP4 and MOV formats supported, up to 100MB</div>
+        </div>
+      </label>
+      <button id="uploadButton" disabled>🚀 Analyze Video</button>
+
+      <div id="status" class="status-message"></div>
+    </section>
+
+    <section id="results" class="results-section" style="display: none;">
+      <h2>🎉 Analysis Complete!</h2>
+      <div class="results-content">
+        <div class="image-preview">
+          <img id="uploadedImage" alt="Analyzed video" />
+        </div>
+        <div id="analysisData" class="analysis-results"></div>
+      </div>
+    </section>
+  </main>
+  <script src="scriptvid.js" defer></script>
+  <script src="site.js"></script>
+</body>
+</html>

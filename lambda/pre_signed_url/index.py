@@ -5,13 +5,8 @@ import time
 import uuid
 
 domain_name = os.environ.get('API_DOMAIN_NAME')
-sqs = boto3.client('sqs')
-
 s3 = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('mapping-routes')
-connection_table = dynamodb.Table('websocket-connections')
-
 
 def handler(event, context):
     payload = {}
@@ -31,21 +26,21 @@ def handler(event, context):
 
     print("payload dumping: ", json.dumps(payload))
     print(f"Received event: {json.dumps(event)}")
-    print(f"Determined detection mode: {detection_mode}")
+    print(f"path: {event.get('path')}")
     print(f"Rawpath: {event.get('rawPath')}")
     
-    raw_path = event.get('rawPath') or event.get('requestContext', {}).get('http', {}).get('path', '')
+    raw_path = event.get('path') or event.get('rawPath') or event.get('requestContext', {}).get('http', {}).get('path', '')
     if raw_path.endswith('/celebrity'):
         detection_mode = 'celebrity'
     elif raw_path.endswith('/labels'):
         detection_mode = 'labels'
-
-    if detection_mode not in ('labels', 'celebrity'):
+    elif raw_path.endswith('/videos'):
+        detection_mode = 'videos'
+    if detection_mode not in ('labels', 'celebrity', 'videos'):
         detection_mode = 'labels'
 
     content_type = payload.get('contentType') 
     filename = payload.get('filename')
-    websocket_connection_id = payload.get('WebSocketConnectionId')
     bucket = os.environ.get('S3_BUCKET_NAME')
 
     if not bucket:
@@ -57,13 +52,11 @@ def handler(event, context):
     lastpart = f"{uuid.uuid4()}-{filename}"
     if filename:
         key_name = f"{prefix}{detection_mode}/{lastpart}"
-    else:
-        key_name = f"{prefix}{detection_mode}/{uuid.uuid4()}"
 
     metadata = {
         'detection_mode': detection_mode,
         "connection_id": payload.get('WebSocketConnectionId'),
-        "domainName": domain_name, #"https://wh08cwowvj.execute-api.us-east-1.amazonaws.com/$default/",
+        "domainName": domain_name,
         "stage": "default",
         "image_id": lastpart
     }
@@ -80,29 +73,8 @@ def handler(event, context):
             ExpiresIn=300
         )
 
-        # sqs.send_message(
-        #     QueueUrl=QUEUE_URL,
-        #     MessageBody=json.dumps({
-                
-        #         })
-        #     )
-        # item_id = lastpart
         print(f"Este es el key name generado: {key_name}")
-        # table.put_item(
-        # Item={
-        #     'id': item_id,         # Esta es tu Partition Key
-        #     's3_uri': f"s3://rekognition-image-bucket123456/uploads/{detection_mode}/{item_id}",      # s3://rekognition-image...
-        #     's3_url': f"https://rekognition-image-bucket123456.s3.us-east-1.amazonaws.com/uploads/{detection_mode}/{item_id}",    
-        #     'timestamp': '2023-10-27T10:00:00Z' # Opcional: para saber cuándo se subió
-        #     }
-        # )
 
-        connection_table.put_item(
-        Item={
-            'id': websocket_connection_id,         # Esta es tu Partition Key
-            'timestamp': '2023-10-27T10:00:00Z' # Opcional: para saber cuándo se subió
-            }
-        )
     except Exception as e:
         return {
             'statusCode': 500,
