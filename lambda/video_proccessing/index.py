@@ -3,6 +3,7 @@ import math
 import uuid
 import boto3
 import os
+import time
 
 rekognition = boto3.client('rekognition')
 dynamodb = boto3.resource('dynamodb')
