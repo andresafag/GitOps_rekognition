@@ -8,6 +8,11 @@ resource "aws_dynamodb_table" "video_job_table" {
         type = "S"
     }
 
+    ttl {
+      attribute_name = "TimeToExist"
+      enabled        = true
+    }
+
     tags = {
         Name = "video_job_table"
     }

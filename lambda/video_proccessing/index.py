@@ -10,6 +10,11 @@ table = dynamodb.Table(os.environ['VIDEO_JOB_TABLE'])
 
 def handler(event, context):
     print(f"Received event: {json.dumps(event)}")
+    # 20 minutes converted to seconds
+    twenty_minutes_in_seconds = 20 * 60
+
+    # Current Unix timestamp + 20 minutes
+    time_to_exist = int(time.time()) + twenty_minutes_in_seconds
     for record in event['Records']:
         message_id = record['messageId']
         
@@ -116,9 +121,9 @@ def handler(event, context):
             # Mark job as processed
             table.update_item(
                 Key={'JobId': job_id},
-                UpdateExpression='SET #p = :val',
-                ExpressionAttributeNames={'#p': 'processed'},
-                ExpressionAttributeValues={':val': True}
+                UpdateExpression='SET #p = :val, #ttl = :ttl_val',
+                ExpressionAttributeNames={'#p': 'processed', '#ttl': 'TimeToExist'},
+                ExpressionAttributeValues={':val': True, ':ttl_val': time_to_exist}
             )
             print(f"Job {job_id} marked as processed")
         except Exception as e:
