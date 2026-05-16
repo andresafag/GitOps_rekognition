@@ -32,6 +32,7 @@ resource "aws_apigatewayv2_integration" "websocket_integration" {
   integration_uri        = var.integration_uri
   integration_method     = "POST"
   payload_format_version = "1.0"
+  timeout_milliseconds = 60000
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration_rekognition_consumer" {

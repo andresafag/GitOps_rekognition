@@ -152,7 +152,7 @@ const uploadIcon = document.querySelector('.upload-icon');
 
 fileInput.addEventListener('change', () => {
   const file = fileInput.files[0];
-  console.log('File selected:', file);
+  uploadButton.disabled = false;
   if (file) {
     uploadIcon.textContent = '✅';
     uploadText.textContent = `Archivo cargado: ${file.name}`;
@@ -188,7 +188,6 @@ uploadButton.addEventListener('click', async () => {
 
   statusEl.textContent = `🔗 Requesting upload URL for ${detectionMode} detection...`;
   statusEl.className = 'status-message';
-  uploadButton.disabled = true;
   console.log('Requesting presigned URL from API:', apiEndpoint, 'with detection mode:', detectionMode);
 
   try {
@@ -255,7 +254,7 @@ uploadButton.addEventListener('click', async () => {
     statusEl.textContent = `❌ Error: ${error.message}`;
     statusEl.className = 'status-message error';
   } finally {
-    uploadButton.disabled = false;
+    uploadButton.disabled = true;
      // Evita problemas si el botón está dentro del label
 
   
@@ -270,6 +269,5 @@ uploadButton.addEventListener('click', async () => {
   fileUpload.classList.remove('is-uploaded');
   
   // 4. Oculta el botón nuevamente
-  uploadButton.style.display = 'none';
   }
 });

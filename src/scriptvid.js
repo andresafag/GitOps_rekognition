@@ -97,6 +97,7 @@ socket.onmessage = (event) => {
 socket.onerror = (error) => console.error('WebSocket Error:', error);
 socket.onclose = () => console.log('Disconnected from WebSocket');
 
+
 function handleVideoResults(message) {
   console.log('Handling video results:', message);
 
@@ -170,8 +171,8 @@ uploadButton.addEventListener('click', async () => {
     return;
   }
 
-  if (videoFile.size > 1000 * 1024 * 1024) {
-    statusEl.textContent = '⚠️ Video is too large. Please select a video smaller than 1GB.';
+  if (videoFile.size > 15 * 1024 * 1024) {
+    statusEl.textContent = '⚠️ Video is too large. Please select a video smaller than 15.0 MB.';
     statusEl.className = 'status-message error';
     return;
   }
