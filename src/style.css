@@ -349,10 +349,51 @@ main {
   box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
 }
 
-#uploadButton:disabled {
-  background: #bdc3c7;
-  cursor: not-allowed;
-  box-shadow: none;
+
+.file-upload {
+  display: block;
+  border: 2px dashed #cccccc;
+  padding: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+/* Efecto Hover original */
+.file-upload:hover {
+  border-color: #007bff;
+  background-color: #f0f7ff;
+}
+
+/* Ocultar el input nativo visualmente */
+#fileInput {
+  display: none;
+}
+
+/* ====== NUEVOS ESTILOS PARA ESTADO CARGADO ====== */
+
+/* Cambio de color general */
+.file-upload.is-uploaded {
+  border-color: #28a745;
+  background-color: #f4fbf6;
+}
+
+/* Resaltar el nombre del archivo */
+.file-upload.is-uploaded .upload-text {
+  color: #1e7e34;
+  font-weight: bold;
+}
+
+/* Ocultar la pista/hint cuando ya hay archivo */
+.file-upload.is-uploaded .upload-hint {
+  display: none;
+}
+
+/* Ocultar la pista/hint cuando ya hay archivo */
+.uploaded .upload-hint {
+  display: none;
 }
 
 /* Status messages */

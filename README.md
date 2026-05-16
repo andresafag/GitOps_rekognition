@@ -2,145 +2,235 @@
 
 ![Github repo](https://img.shields.io/badge/github-repo-blue?style=for-the-badge&logo=github)
 ![Terraform](https://img.shields.io/badge/terraform-purple?style=for-the-badge&logo=terraform)
-![AWS](https://img.shields.io/badge/aws-orange.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHBhdGggZD0ibTE4LjggMTEuNC0uOC0uMS0uOC0uM0gxN2wtLjEuMnYuNWwuMi4yLjguMyAxIC4xIDEtLjEuNy0uNC41LS42LjItLjgtLjMtLjktMS0uNi0xLS4zLS43LS40LS4yLS41LjMtLjYuOS0uMSAxLjIuMmguM2wuMi0uMXYtLjRsLS4xLS4yLS4yLS4yaC0uM0wyMCA2bC0uNC0uMUgxOWwtLjguMS0uNy40LS41LjUtLjIuNy4zIDFhMiAyIDAgMCAwIDEuMS43bDEgLjMuNy40LjIuNGExIDEgMCAwIDEtLjQuN3ptLTUuOS00Ljl2LS4zaC0xLjJ2LjNsLTEgNC40LTEuMi00LjQtLjItLjNoLS45bC0uMS4xdi4zbDEuNiA1LjEuMS4zaDEuMWwuMS0uMyAxLTQuMiAxIDQuMi4xLjNoMS4xbC4yLS4zIDEuNi01LjF2LS4ybC0uMi0uMmgtLjlsLS4xLjMtMSA0LjV6TTUuOCA4LjZINWEyIDIgMCAwIDAtMS43LjUgMiAyIDAgMCAwLS42IDEuNCAyIDIgMCAwIDAgLjUgMS4yIDIgMiAwIDAgMCAxLjMuNSAzIDMgMCAwIDAgMi0uOWwuMi40LjMuM2guNGwuNC0uMy4xLS4ydi0uMWwtLjItLjVWOC4yYTIgMiAwIDAgMC0uNi0xLjZBMiAyIDAgMCAwIDUuMyA2bC0xIC4xLS44LjMtLjIuMlY3cTAgLjMuMi4yaC4zbC42LS4zaC43YTIgMiAwIDAgMSAxLjEuMmwuMyAxdi42em0uNyAxdi44bC0uMy40LS42LjQtLjcuMi0uNy0uMy0uMi0uNy4zLS44IDEtLjJINnpNMTkuOSAxNWEyMCAyMCAwIDAgMS03LjYgMS41QTIwIDIwIDAgMCAxIDIuMyAxNHEtLjQgMC0uMi4zQTE1IDE1IDAgMCAwIDEyIDE4YTE0IDE0IDAgMCAwIDguMS0yLjVxLjMtLjYtLjMtLjUiLz48cGF0aCBkPSJNMTguNCAxNHEtLjMuMyAwIC40Yy43LS4xIDIuMy0uMyAyLjYgMHMtLjMgMS45LS42IDIuNXEwIC4zLjMuMmE0IDQgMCAwIDAgMS4yLTMuNCA0IDQgMCAwIDAtMy41LjQiLz48L3N2Zz4=)
-![Javascript](https://img.shields.io/badge/javascript-black?style=for-the-badge&logo=javascript)
-![Snyk](https://img.shields.io/badge/snyk-black.svg?style=for-the-badge&logo=snyk)
-![Githubactions](https://img.shields.io/badge/github_actions-black.svg?style=for-the-badge&logo=githubactions)
+![AWS](https://img.shields.io/badge/aws-orange?style=for-the-badge&logo=amazonaws)
+![Python](https://img.shields.io/badge/python-blue?style=for-the-badge&logo=python)
+![JavaScript](https://img.shields.io/badge/javascript-black?style=for-the-badge&logo=javascript)
+![CloudFront](https://img.shields.io/badge/cloudfront-232F3E?style=for-the-badge&logo=amazonaws)
+![AWS WAF](https://img.shields.io/badge/aws_waf-FF9900?style=for-the-badge&logo=amazonaws)
+![GitHub Actions](https://img.shields.io/badge/github_actions-black?style=for-the-badge&logo=githubactions)
+![Snyk](https://img.shields.io/badge/snyk-black?style=for-the-badge&logo=snyk)
 
-
-> **Infrastructure as Code (IaC)** project using Terraform to deploy a fully event-driven image processing pipeline powered by AWS Rekognition.
+> **Production-grade serverless AWS platform** built with Terraform, GitOps, and DevSecOps practices to deliver real-time AI-powered image analysis using Amazon Rekognition.
 
 ---
 
-## 🧭 Table of Contents
+# 🧭 Table of Contents
 
 - [🚀 GitOps\_rekognition](#-gitops_rekognition)
-  - [🧭 Table of Contents](#-table-of-contents)
-  - [📌 Overview](#-overview)
-  - [🧰 Tech Stack](#-tech-stack)
-    - [✨ Highlights](#-highlights)
-  - [🏗️ Architecture](#️-architecture)
-  - [📁 Project Structure](#-project-structure)
-  - [🔐 CI/CD \& Security Scanning](#-cicd--security-scanning)
-    - [🛡️ CodeQL Analysis](#️-codeql-analysis)
-    - [🔎 Snyk Security Scans](#-snyk-security-scans)
+- [🧭 Table of Contents](#-table-of-contents)
+- [📌 Overview](#-overview)
+- [🏗️ Architecture](#️-architecture)
+  - [🔥 Core AWS Services Used](#-core-aws-services-used)
+  - [🧱 High-Level Architecture](#-high-level-architecture)
+- [✨ Enterprise Highlights](#-enterprise-highlights)
+  - [☁️ Cloud-Native Architecture](#️-cloud-native-architecture)
+  - [⚡ Real-Time Processing](#-real-time-processing)
+  - [🔐 Production Security](#-production-security)
+  - [📈 Observability](#-observability)
+  - [🌍 Global Delivery](#-global-delivery)
+- [🔐 Security \& DevSecOps](#-security--devsecops)
+  - [🛡️ Security Best Practices](#️-security-best-practices)
+  - [🔎 Automated Security Scanning](#-automated-security-scanning)
+    - [CodeQL Analysis](#codeql-analysis)
+    - [Snyk Security Scans](#snyk-security-scans)
       - [🏗️ Infrastructure as Code (IaC)](#️-infrastructure-as-code-iac)
       - [🧠 Static Application Security Testing (SAST)](#-static-application-security-testing-sast)
-      - [📦 Open Source Dependency Scanning](#-open-source-dependency-scanning)
-    - [⚙️ Pipeline Overview](#️-pipeline-overview)
-  - [🔄 Workflow](#-workflow)
-  - [📡 API Endpoints](#-api-endpoints)
-  - [📊 Monitoring](#-monitoring)
-  - [Live Demo](#live-demo)
-  - [🧪 Features](#-features)
-  - [License](#license)
-  - [✍️ Author](#️-author)
+      - [📦 Dependency Scanning](#-dependency-scanning)
+- [📊 Monitoring \& Observability](#-monitoring--observability)
+  - [CloudWatch Dashboards](#cloudwatch-dashboards)
+  - [🚨 Alerts](#-alerts)
+- [📡 API Endpoints](#-api-endpoints)
+- [📈 Highlights](#-highlights)
+  - [☁️ Cloud Engineering](#️-cloud-engineering)
+  - [🏗️ DevOps Engineering](#️-devops-engineering)
+  - [🔐 DevSecOps](#-devsecops)
+  - [📊 Site Reliability Engineering (SRE)](#-site-reliability-engineering-sre)
+  - [⚡ Backend Engineering](#-backend-engineering)
+  - [☁️ Cloud Engineering](#️-cloud-engineering-1)
+  - [🏗️ DevOps Engineering](#️-devops-engineering-1)
+  - [🔐 DevSecOps](#-devsecops-1)
+  - [📊 Site Reliability Engineering (SRE)](#-site-reliability-engineering-sre-1)
+  - [⚡ Backend Engineering](#-backend-engineering-1)
+  - [📜 License](#-license)
 
 ---
 
-## 📌 Overview
+# 📌 Overview
 
-**GitOps_rekognition** provisions a complete serverless architecture on AWS that enables:
+**GitOps_rekognition** is a cloud-native, event-driven AWS platform that demonstrates modern:
 
-- 📤 Image upload via a web interface
-- 🔗 API Gateway-triggered Lambda functions
-- 📬 Event-driven processing using SQS & SNS
-- 🧠 Image analysis with AWS Rekognition
-- ⚡ Real-time results via WebSocket API
+- ☁️ DevOps Engineering
+- 🔐 DevSecOps Automation
+- 🏗️ Infrastructure as Code (IaC)
+- ⚡ Serverless Architecture
+- 📡 Real-Time Communication
 
-The system detects:
-- 👤 Celebrities in images
-- 🏷️ Labels and objects
+The platform allows users to upload images and receive **real-time AI-powered image analysis** using **Amazon Rekognition**.
 
-Results are pushed back to the frontend in real time.
+The infrastructure is fully provisioned using **Terraform** and follows production-grade AWS architecture patterns.
 
 ---
 
+# 🏗️ Architecture
 
-## 🧰 Tech Stack
+## 🔥 Core AWS Services Used
 
-<div align="center">
-
-| 🧩 Layer            | ⚙️ Technology                                                                 |
-|--------------------|------------------------------------------------------------------------------|
-| 🎨 Frontend        | `HTML5` · `CSS3` · `JavaScript (Vanilla)`                                    |
-| ⚡ Backend         | `AWS Lambda` · `Python 3.10`                                                 |
-| 🏗️ Infrastructure | `Terraform` (Infrastructure as Code)                                         |
-| ☁️ Cloud           | `Amazon Web Services (AWS)`                                                  |
-| 📦 Storage         | `Amazon S3`                                                                  |
-| 📬 Messaging       | `Amazon SQS` · `Amazon SNS`                                                  |
-| 🌐 API Layer       | `Amazon API Gateway` (HTTP + WebSocket)                                      |
-| 🧠 AI / ML         | `Amazon Rekognition`                                                         |
-| 🔐 Security        | `IAM Roles & Policies` · `Snyk` · `CodeQL`                                   |
-| 📊 Monitoring      | `Amazon CloudWatch`                                                          |
-
-</div>
+- Amazon API Gateway (HTTP + WebSocket)
+- AWS Lambda
+- Amazon S3
+- Amazon SQS
+- Amazon SNS
+- Amazon Rekognition
+- Amazon DynamoDB
+- Amazon CloudWatch
+- Amazon CloudFront
+- AWS WAF
+- AWS KMS
+- Amazon Route53
+- AWS Certificate Manager (ACM)
 
 ---
 
-### ✨ Highlights
-
-- **Fully Serverless Architecture** – No server management required  
-- **Event-Driven Design** – Scalable and decoupled components  
-- **Real-Time Communication** – Powered by WebSockets  
-- **AI-Powered Image Analysis** – Using AWS Rekognition  
-- **DevSecOps Ready** – Integrated security scanning with Snyk & CodeQL  
-
----
-
-## 🏗️ Architecture
+## 🧱 High-Level Architecture
 
 ```text
-Client (Web)
-   │
-   ▼
-API Gateway (HTTP)
-   │
-   ▼
-Lambda (Generate Pre-Signed URL)
-   │
-   ▼
-S3 (Image Upload)
-   │
-   ▼
-SQS Queue ───► DLQ (Failures)
-   │
-   ▼
-Lambda (Rekognition Consumer)
-   │
-   ├──► AWS Rekognition
-   └──► API Gateway (WebSocket)
-                │
+                    ┌────────────────────────┐
+                    │ Route53 + ACM TLS Cert │
+                    └────────────┬───────────┘
+                                 │
+                                 ▼
+                       ┌──────────────────┐
+                       │  CloudFront CDN  │
+                       └────────┬─────────┘
+                                │
+                                ▼
+                        ┌──────────────┐
+                        │  S3 Website  │
+                        └──────┬───────┘
+                               │
+                               ▼
+                  ┌────────────────────────┐
+                  │ API Gateway (HTTP API)│
+                  └──────────┬────────────┘
+                             │
+                             ▼
+             ┌────────────────────────────────┐
+             │ Lambda - Generate Signed URL  │
+             └───────────────┬────────────────┘
+                             │
+                             ▼
+                      ┌─────────────┐
+                      │ S3 Uploads  │
+                      └──────┬──────┘
+                             │
+                             ▼
+                       ┌───────────┐
+                       │ SQS Queue │
+                       └─────┬─────┘
+                             │
+                             ▼
+            ┌────────────────────────────────┐
+            │ Lambda - Rekognition Consumer │
+            └───────────────┬────────────────┘
+                            │
+            ┌───────────────┴────────────────┐
+            ▼                                ▼
+   ┌──────────────────┐             ┌────────────────┐
+   │ Amazon Rekognition│             │ DynamoDB Store │
+   └─────────┬────────┘             └────────────────┘
+             │
+             ▼
+      ┌────────────────────┐
+      │ API Gateway (WS)   │
+      └─────────┬──────────┘
                 ▼
-          Real-time Frontend
+         Real-Time Frontend
+
 ```
 
+| 🧩 Layer             | ⚙️ Technology                      |
+| -------------------- | ---------------------------------- |
+| 🎨 Frontend          | HTML5 · CSS3 · Vanilla JavaScript  |
+| ⚡ Backend            | AWS Lambda (Python 3.10)           |
+| 🏗️ Infrastructure   | Terraform                          |
+| ☁️ Cloud             | AWS                                |
+| 🌐 Networking        | API Gateway · CloudFront · Route53 |
+| 📦 Storage           | Amazon S3                          |
+| 📬 Messaging         | Amazon SQS · Amazon SNS            |
+| 🧠 AI / ML           | Amazon Rekognition                 |
+| 🗄️ Database         | Amazon DynamoDB                    |
+| 🔐 Security          | IAM · AWS WAF · AWS KMS            |
+| 📊 Monitoring        | Amazon CloudWatch                  |
+| 🚀 CI/CD             | GitHub Actions                     |
+| 🔎 Security Scanning | Snyk · CodeQL                      |
 
-## 📁 Project Structure
-```
+
+✨ Enterprise Highlights
+# ✨ Enterprise Highlights
+
+## ☁️ Cloud-Native Architecture
+- Fully serverless AWS infrastructure
+- Event-driven asynchronous workflows
+- Infrastructure provisioned entirely with Terraform
+
+## ⚡ Real-Time Processing
+- WebSocket-based live communication
+- Secure pre-signed uploads
+- Async image processing with SQS
+
+## 🔐 Production Security
+- IAM least privilege model
+- AWS WAF protection
+- KMS encryption
+- DLQ resiliency
+- Secure bucket policies
+
+## 📈 Observability
+- CloudWatch dashboards
+- SNS alerting
+- Lambda logging
+- Queue monitoring
+- Error tracking
+
+## 🌍 Global Delivery
+- CloudFront CDN acceleration
+- Route53 DNS management
+- HTTPS using ACM certificates
+
+```text
 GitOps_rekognition/
 │
 ├── .github/
 │   └── workflows/
-│       └── codeql.yml
+│       ├── codeql.yml
+│       └── security.yml
 │
 ├── terraform/
 │   ├── infrastructure/
-│   │   ├── environments/
-│   │   └── lambda/
+│   │   ├── apigateway/
+│   │   ├── cloudfront/
+│   │   ├── cloudwatch/
+│   │   ├── dynamodb/
+│   │   ├── iam/
+│   │   ├── lambda/
+│   │   ├── route53/
+│   │   ├── s3/
+│   │   ├── sns/
+│   │   ├── sqs/
+│   │   ├── waf/
+│   │   └── environments/
 │   │
-│   ├── .terraform/
-│   ├── .terraform.lock.hcl
 │   ├── backend.tf
 │   ├── main.tf
 │   ├── outputs.tf
 │   ├── provider.tf
-│   ├── terraform.tfvars.example
-│   └── variables.tf
+│   ├── variables.tf
+│   └── terraform.tfvars.example
 │
 ├── lambda/
 │   ├── pre_signed_url/
-│   └── rekognition_consumer/
+│   ├── rekognition_consumer/
+│   └── video_processing/
 │
 ├── src/
 │   ├── index.html
@@ -149,141 +239,173 @@ GitOps_rekognition/
 │   └── style.css
 │
 └── README.md
+
 ```
 
----
+🔐 Security & DevSecOps
+# 🔐 Security & DevSecOps
 
-## 🔐 CI/CD & Security Scanning
+## 🛡️ Security Best Practices
 
-This project integrates **GitHub Actions** to enforce code quality and security best practices through automated analysis pipelines.
-
-### 🛡️ CodeQL Analysis
-
-We use **CodeQL** to perform static code analysis across multiple languages:
-
-- ✅ JavaScript
-- ✅ Python
-
-**Key Features:**
-- Multi-language support via matrix strategy
-- Automated security vulnerability detection
-- No build required (`build-mode: none`)
-- Runs on every workflow execution
-
-**Workflow Highlights:**
-- Repository checkout
-- CodeQL initialization per language
-- Automated analysis with categorized results
+- IAM least privilege access
+- AWS WAF integration
+- S3 server-side encryption
+- KMS-managed encryption keys
+- Secure pre-signed URLs
+- HTTPS enforced via ACM
+- CloudFront Origin Access Identity
+- SQS Dead Letter Queue (DLQ)
 
 ---
 
-### 🔎 Snyk Security Scans
+## 🔎 Automated Security Scanning
 
-We leverage **Snyk** to perform comprehensive security checks across:
+### CodeQL Analysis
+
+Static analysis for:
+- Python
+- JavaScript
+
+### Snyk Security Scans
 
 #### 🏗️ Infrastructure as Code (IaC)
-- Scans Terraform files for misconfigurations
-- Enforces **high severity threshold**
+- Terraform misconfiguration scanning
+- High-severity enforcement
 
 #### 🧠 Static Application Security Testing (SAST)
-- Analyzes Python Lambda code directly
-- No dependency files required
+- Lambda source code scanning
+- Vulnerability detection
 
-#### 📦 Open Source Dependency Scanning
-- Detects vulnerabilities in dependencies
-- Automatically scans all projects if dependency files exist
-- Non-blocking if no dependencies are found
+#### 📦 Dependency Scanning
+- Open-source dependency analysis
+- Continuous vulnerability monitoring
 
----
+📊 Monitoring & Observability
 
-### ⚙️ Pipeline Overview
+# 📊 Monitoring & Observability
 
-```text
-GitHub Actions Pipeline
-│
-├── 🛡️ CodeQL Analysis
-│   ├── JavaScript / TypeScript
-│   └── Python
-│
-└── 🔎 Snyk Security
-    ├── Terraform IaC Scan
-    ├── Python Code SAST
-    └── Open Source Dependency Scan
-```
----
+## CloudWatch Dashboards
 
-## 🔄 Workflow
+Included monitoring:
+- Lambda invocations
+- Lambda duration
+- API Gateway metrics
+- WebSocket metrics
+- Queue depth
+- Error rates
+- Rekognition requests
 
-1. User uploads an image via the web interface.
-2. Frontend requests a pre-signed URL from the API Gateway.
-3. Lambda generates the URL and returns it to the frontend.
-4. Frontend uploads the image directly to S3 using the pre-signed URL.
-5. S3 triggers an event that sends a message to the SQS queue.
-6. Rekognition Consumer Lambda processes the SQS message, analyzes the image with AWS Rekognition
-    Detects labels
-    Recognizes celebrities
-WebSocket pushes results to frontend in real time
+## 🚨 Alerts
 
----
-## 📡 API Endpoints
+SNS notifications for:
+- DLQ spikes
+- Lambda failures
+- CloudWatch alarms
+- Queue processing failures
 
-| Method | Endpoint     | Description                            |
-| ------ | ------------ | -------------------------------------- |
-| POST   | `/labels`    | Upload image for label detection       |
-| POST   | `/celebrity` | Upload image for celebrity recognition |
-| WS     | `/sockets`   | Real-time communication channel        |
+📡 API Endpoints 
 
----
-## 📊 Monitoring
+# 📡 API Endpoints
 
-📈 CloudWatch Dashboard included:
-Lambda invocations & duration
-SQS queue depth
-Rekognition requests
-Error rates
-🚨 Alerts:
-Dead Letter Queue (DLQ) monitoring via SNS
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/labels` | Label detection |
+| POST | `/celebrity` | Celebrity recognition |
+| POST | `/videos` | Video/image processing |
+| WS | `/sockets` | Real-time communication |
 
----
+# 📈 Highlights
 
-🔐 Security
-🔒 IAM roles with least privilege
-🔐 S3 server-side encryption (AES256)
-🌐 CORS enabled for API Gateway
-📩 DLQ for failed message handling
-🔑 Secure pre-signed URLs for uploads
+This project demonstrates practical experience with:
 
----
+## ☁️ Cloud Engineering
+- AWS serverless architecture
+- Event-driven distributed systems
+- CloudFront CDN optimization
+- Route53 + ACM production networking
 
-##  Live Demo
+## 🏗️ DevOps Engineering
+- Terraform Infrastructure as Code
+- GitHub Actions CI/CD pipelines
+- Automated deployments
+- Modular infrastructure design
 
-👉 [Demo](https://rekoglabelify.com)
+## 🔐 DevSecOps
+- Snyk security automation
+- CodeQL static analysis
+- IAM least privilege implementation
+- Secure cloud architecture patterns
 
-## 🧪 Features
+## 📊 Site Reliability Engineering (SRE)
+- CloudWatch dashboards
+- Monitoring & alerting
+- Queue resiliency patterns
+- Operational observability
 
+## ⚡ Backend Engineering
+- Asynchronous message processing
+- WebSocket communication
+- Scalable serverless APIs
+- Real-time event streaming
+
+
+🌍 Live Demo
+
+👉 https://rekoglabelify.com
+
+🧪 Features
 - ✅ Celebrity recognition
 - ✅ Label detection
-- ✅ Real-time results via WebSocket
 - ✅ Event-driven architecture
-- ✅ Serverless deployment with Terraform
-- ✅ Comprehensive monitoring and alerting
-- ✅ Secure IAM roles and S3 encryption
-- ✅ Dead Letter Queue for failure handling
-- ✅ CI/CD pipeline with GitHub Actions
+- ✅ Real-time WebSocket updates
+- ✅ Terraform IaC deployment
+- ✅ CloudFront CDN integration
+- ✅ Route53 domain management
+- ✅ AWS WAF protection
+- ✅ DynamoDB persistence
+- ✅ CloudWatch dashboards
+- ✅ SNS alerting
+- ✅ Secure S3 uploads
+- ✅ DLQ resiliency
+- ✅ GitHub Actions CI/CD
+- ✅ Snyk & CodeQL DevSecOps scanning
 
-🚀 Benefits
-🔐 Early detection of vulnerabilities
-📉 Reduced security risks in infrastructure and code
-⚡ Automated and consistent analysis
-🧩 Seamless integration with GitOps workflows
 
----
+This project demonstrates practical experience with:
 
-## License
+## ☁️ Cloud Engineering
+- AWS serverless architecture
+- Event-driven distributed systems
+- CloudFront CDN optimization
+- Route53 + ACM production networking
+## 🏗️ DevOps Engineering
+- Terraform Infrastructure as Code
+- GitHub Actions CI/CD pipelines
+- Automated deployments
+- Modular infrastructure design
+## 🔐 DevSecOps
+- Snyk security automation
+- CodeQL static analysis
+- IAM least privilege implementation
+- Secure cloud architecture patterns
+## 📊 Site Reliability Engineering (SRE)
+- CloudWatch dashboards
+- Monitoring & alerting
+- Queue resiliency patterns
+- Operational observability
+## ⚡ Backend Engineering
+- Asynchronous message processing
+- WebSocket communication
+- Scalable serverless APIs
+- Real-time event streaming
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 📜 License
 
-## ✍️ Author
+This project is licensed under the MIT License.
 
-**Andrés Acosta**
-*  [My LinkedIn profile](https://linkedin.com/in/andrés-acosta-203923238)
+See the LICENSE file for details.
+
+✍️ Author
+Andrés Acosta
+LinkedIn: https://linkedin.com/in/andrés-acosta-203923238
+DevOps | AWS | Terraform | Cloud | DevSecOps

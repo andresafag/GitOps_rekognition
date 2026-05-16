@@ -145,6 +145,20 @@ function displayResults(data, detectionMode, filename, type) {
       statusEl.textContent = 'Done!';
   }
 }
+const fileUpload = document.querySelector('.file-upload');
+const uploadText = document.querySelector('.upload-text');
+const uploadIcon = document.querySelector('.upload-icon');
+
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  console.log('File selected:', file);
+  if (file) {
+    uploadIcon.textContent = '✅';
+    uploadText.textContent = `Archivo cargado: ${file.name}`;
+    fileUpload.classList.add('is-uploaded'); 
+  }
+});
 
 uploadButton.addEventListener('click', async () => {
   const file = fileInput.files[0];
@@ -242,5 +256,20 @@ uploadButton.addEventListener('click', async () => {
     statusEl.className = 'status-message error';
   } finally {
     uploadButton.disabled = false;
+     // Evita problemas si el botón está dentro del label
+
+  
+  // 1. Limpia el archivo seleccionado
+  fileInput.value = ''; 
+  
+  // 2. Restaura los textos e íconos originales
+  uploadIcon.textContent = '📁';
+  uploadText.textContent = 'Choose an image or drag & drop';
+  
+  // 3. Remueve los estilos de éxito
+  fileUpload.classList.remove('is-uploaded');
+  
+  // 4. Oculta el botón nuevamente
+  uploadButton.style.display = 'none';
   }
 });

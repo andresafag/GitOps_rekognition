@@ -140,6 +140,21 @@ function handleVideoResults(message) {
   console.warn('Message has no labels:', message);
 }
 
+const fileUpload = document.querySelector('.file-upload');
+const uploadText = document.querySelector('.upload-text');
+const uploadIcon = document.querySelector('.upload-icon');
+
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  console.log('File selected:', file);
+  if (file) {
+    uploadIcon.textContent = '✅';
+    uploadText.textContent = `Archivo cargado: ${file.name}`;
+    fileUpload.classList.add('is-uploaded'); 
+  }
+});
+
 uploadButton.addEventListener('click', async () => {
   const videoFile = fileInput.files[0];
   const detectionMode = '/videos';
@@ -243,5 +258,13 @@ uploadButton.addEventListener('click', async () => {
     statusEl.className = 'status-message error';
   } finally {
     uploadButton.disabled = false;
+      fileInput.value = ''; 
+  
+  // 2. Restaura los textos e íconos originales
+  uploadIcon.textContent = '📁';
+  uploadText.textContent = 'Choose a video or drag & drop';
+  
+  // 3. Remueve los estilos de éxito
+  fileUpload.classList.remove('is-uploaded');
   }
 });
