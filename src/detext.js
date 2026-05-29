@@ -1,10 +1,6 @@
 const apiBaseUrl = CONFIG.BASE_URL;
 const socket = new WebSocket(CONFIG.SOCKET);
 const wss = CONFIG.WSS;
-
-console.log('API Base URL:', apiBaseUrl);
-console.log('WebSocket URL:', CONFIG.SOCKET);
-console.log('WSS URL:', CONFIG.WSS);
 let intervalId;
 let pingInterval;
 let reducedImageFile = null;
@@ -161,7 +157,7 @@ function displayResults(data, detectionMode, filename, type) {
 
   const section = document.createElement('div');
   section.className = 'result-section';
-  section.innerHTML = '<h3>📋 Detected Labels</h3>';
+  section.innerHTML = '<h3>📋 Detected Text</h3>';
 
   for (const itemData of data) {
     const item = document.createElement('div');

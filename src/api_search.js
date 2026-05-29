@@ -1,7 +1,20 @@
-
 import { API_KEY } from './apiKey.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Función para mitigar ataques XSS (Escapa caracteres peligrosos)
+    function escapeHTML(str) {
+        if (!str) return 'N/A';
+        return String(str).replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
+
     // Lógica del Carrusel
     const slides = document.querySelectorAll('.carousel-slide');
     const dots = document.querySelectorAll('.dot');
@@ -33,8 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.style.display = 'none';
 
         try {
-            // Asumiendo que config.API_KEY existe en config.js
-            const response = await fetch(`https://api.api-ninjas.com/v1/historicalfigures?name=${name}`, {
+            const response = await fetch(`https://api.api-ninjas.com/v1/historicalfigures?name=${encodeURIComponent(name)}`, {
                 headers: { 'X-Api-Key': `${API_KEY}` } 
             });
 
@@ -50,29 +62,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     const card = document.createElement('div');
                     card.className = 'figure-card';
 
-                    // Título del personaje
-                    let htmlContent = `<h3>${person.name}</h3>`;
+                    // Título del personaje (Protegido con escapeHTML)
+                    let htmlContent = `<h3>${escapeHTML(person.name)}</h3>`;
 
                     const wikiSummaryResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(person.name)}`);
                     const wikiSummary = await wikiSummaryResponse.json();
+                    
+                    // Validamos y escapamos la URL de la imagen por seguridad
                     const wikiImageUrl = wikiSummary?.thumbnail?.source || '';
 
                     if (wikiImageUrl) {
-                        htmlContent += `<img src="${wikiImageUrl}" alt="Imagen de ${person.name}" class="figure-image" />`;
+                        htmlContent += `<img src="${encodeURI(wikiImageUrl)}" alt="Imagen de ${escapeHTML(person.name)}" class="figure-image" />`;
                     }
 
-                    htmlContent += `<p><span class="info-label">Título/Rol:</span> ${person.title || 'N/A'}</p>`;
+                    htmlContent += `<p><span class="info-label">Título/Rol:</span> ${escapeHTML(person.title || 'N/A')}</p>`;
                     htmlContent += `<hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">`;
                     
                     // Ciclo FOR para recorrer el objeto 'info'
                     htmlContent += `<div>`;
                     for (const key in person.info) {
-                        // Formateamos la clave (quitamos guiones bajos y ponemos mayúscula)
+                        // Formateamos la clave de forma segura
                         const label = key.replace(/_/g, ' ');
                         htmlContent += `
                             <p style="margin: 5px 0;">
-                                <span class="info-label" style="text-transform: capitalize;">${label}:</span> 
-                                ${person.info[key]}
+                                <span class="info-label" style="text-transform: capitalize;">${escapeHTML(label)}:</span> 
+                                ${escapeHTML(person.info[key])}
                             </p>`;
                     }
                     htmlContent += `</div>`;

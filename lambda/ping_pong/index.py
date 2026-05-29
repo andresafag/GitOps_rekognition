@@ -15,7 +15,7 @@ def handler(event, context):
    
     try:
         # 4. Enviar el mensaje 'pong' de vuelta al celular
-        response_data = json.dumps({"ping": "pong"})
+        response_data = json.dumps({"connectionId": connection_id})
         apigw_client.post_to_connection(
             ConnectionId=connection_id,
             Data=response_data

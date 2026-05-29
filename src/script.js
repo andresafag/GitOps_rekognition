@@ -5,11 +5,6 @@ const fileUpload = document.querySelector('.file-upload');
 const uploadText = document.querySelector('.upload-text');
 const uploadIcon = document.querySelector('.upload-icon');
 const uploadButton = document.getElementById('uploadButton');
-
-
-console.log('API Base URL:', apiBaseUrl);
-console.log('WebSocket URL:', CONFIG.SOCKET);
-console.log('WSS URL:', CONFIG.WSS);
 let intervalId;
 let pingInterval;
 let reducedImageFile = null;
@@ -40,6 +35,7 @@ socket.onopen = (event) => {
  
 socket.onmessage = (event) => {
   const message = JSON.parse(event.data);
+  console.log(event)
 
   if (message.connectionId) {
     connection_id = message.connectionId;
@@ -173,7 +169,7 @@ function displayResults(data, detectionMode, filename, type) {
   if (detectionMode === 'labels') {
     const section = document.createElement('div');
     section.className = 'result-section';
-    section.innerHTML = '<h3>📋 Detected Labels</h3>';
+    section.innerHTML = '<h3>📋 Detected Labels in objects or people</h3>';
 
     for (const itemData of data) {
       const item = document.createElement('div');
