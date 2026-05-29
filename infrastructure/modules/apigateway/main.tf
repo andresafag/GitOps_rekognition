@@ -29,7 +29,7 @@ resource "aws_apigatewayv2_api" "websocket" {
 resource "aws_apigatewayv2_integration" "websocket_integration" {
   api_id                 = aws_apigatewayv2_api.websocket.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = var.integration_uri
+  integration_uri        = var.integration_uri_ping_route_arn
   integration_method     = "POST"
   payload_format_version = "1.0"
   timeout_milliseconds = 29000
@@ -68,6 +68,12 @@ resource "aws_apigatewayv2_route" "videos_route" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration_presigned_url.id}"
 }
 
+resource "aws_apigatewayv2_route" "text_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /text"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration_presigned_url.id}"
+}
+
 
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http_api.id
@@ -95,3 +101,22 @@ resource "aws_apigatewayv2_stage" "websocket_stage" {
 resource "aws_api_gateway_account" "account" {
   cloudwatch_role_arn = var.aws_iam_role_apigw_log_role_arn 
 }
+
+//-----------------------------
+
+
+resource "aws_apigatewayv2_route" "ping_route" {
+  api_id    = aws_apigatewayv2_api.websocket.id
+  route_key = "ping"
+  target    = "integrations/${aws_apigatewayv2_integration.websocket_integration.id}"
+}
+
+resource "aws_apigatewayv2_integration" "ping_integration" {
+  api_id                 = aws_apigatewayv2_api.websocket.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.integration_uri
+  integration_method     = "POST"
+  payload_format_version = "1.0"
+  timeout_milliseconds = 29000
+}
+

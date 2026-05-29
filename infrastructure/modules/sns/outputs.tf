@@ -38,6 +38,10 @@ output "aws_sqs_queue_rekognition_video_updates" {
   value       = aws_sqs_queue.aws_sqs_queue_rekognition_video_updates.arn
 }
 
+output "aws_sqs_queue_rekognition_text_updates" {
+  value = aws_sqs_queue.aws_sqs_queue_rekognition_text_updates.arn
+}
+
 output "aws_sqs_queue_policy_allow_sns_send_message_queue_url" {
   description = "URL of the SQS queue policy that allows SNS to send messages."
   value       = aws_sqs_queue_policy.allow_sns_send_message.queue_url

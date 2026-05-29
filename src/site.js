@@ -1,3 +1,10 @@
+// File upload functionality
+const fileInput = document.getElementById('fileInput');
+const statusEl = document.getElementById('status');
+const resultsEl = document.getElementById('results');
+const uploadedImageEl = document.getElementById('uploadedImage');
+const analysisDataEl = document.getElementById('analysisData');
+
 // Carousel functionality
 let currentSlide = 0;
 const slides = document.querySelectorAll('.carousel-slide');
@@ -39,13 +46,7 @@ if (slides.length > 0) {
   });
 }
 
-// File upload functionality
-const fileInput = document.getElementById('fileInput');
-const uploadButton = document.getElementById('uploadButton');
-const statusEl = document.getElementById('status');
-const resultsEl = document.getElementById('results');
-const uploadedImageEl = document.getElementById('uploadedImage');
-const analysisDataEl = document.getElementById('analysisData');
+
 
 // Random analysis messages
 const analysisMessages = [
@@ -78,13 +79,7 @@ function stopRandomMessages() {
   }
 }
 
-// File input handling
-fileInput.addEventListener('change', () => {
-  uploadButton.disabled = !fileInput.files.length;
-  statusEl.textContent = '';
-  statusEl.className = '';
-  resultsEl.style.display = 'none';
-});
+
 
 // Drag and drop functionality
 const uploadArea = document.querySelector('.upload-area');

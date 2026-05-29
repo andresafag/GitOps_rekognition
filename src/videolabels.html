@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rekognition Upload</title>
+  <link type="image/png" sizes="32x32" rel="icon" href="reconocimiento.png">
   <script src="nav.js" defer></script>
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js" crossorigin="anonymous"></script>
   <script src="config.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -66,12 +68,15 @@
           <div class="upload-hint">ℹ️ Only MP4 and MOV formats supported, up to 100MB</div>
         </div>
       </label>
+        <progress id="barraProgreso" value="0" max="100" hidden></progress>
+        <span id="textoProgreso" hidden>0%</span>
       <button id="uploadButton" disabled>🚀 Analyze Video</button>
 
       <div id="status" class="status-message"></div>
     </section>
 
     <section id="results" class="results-section" style="display: none;">
+
       <h2>🎉 Analysis Complete!</h2>
       <div class="results-content">
         <div class="image-preview">

@@ -36,7 +36,9 @@ def handler(event, context):
         detection_mode = 'labels'
     elif raw_path.endswith('/videos'):
         detection_mode = 'videos'
-    if detection_mode not in ('labels', 'celebrity', 'videos'):
+    elif raw_path.endswith('/text'):
+        detection_mode = 'text'
+    if detection_mode not in ('labels', 'celebrity', 'videos', 'text'):
         detection_mode = 'labels'
 
     content_type = payload.get('contentType') 

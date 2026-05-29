@@ -22,3 +22,7 @@ output "presigned_url_lambda_name" {
 output "aws_lambda_function_video_proccessing_arn" {
   value = aws_lambda_function.video_proccessing.arn
 }
+
+output "aws_lambda_function_ping_pong_arn" {
+  value = aws_lambda_function.ping_pong.invoke_arn
+}

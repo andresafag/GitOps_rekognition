@@ -33,6 +33,14 @@ output "role_presigned_url" {
   value       = module.iam.role_presigned_url
 }
 
+output "role_ping_pong" {
+  value = module.iam.role_ping_pong
+}
+
+output "aws_lambda_function_ping_pong_arn" {
+  value = module.lambda.aws_lambda_function_ping_pong_arn
+}
+
 output "role_rekognition_consumer" {
   description = "ARN of the IAM role for the Rekognition consumer Lambda function."
   value       = module.iam.role_rekognition_consumer
@@ -172,10 +180,12 @@ output "aws_lambda_function_video_proccessing_arn" {
   value = module.lambda.aws_lambda_function_video_proccessing_arn
 }
 
+
 output "aws_sqs_queue_rekognition_video_updates" {
   description = "ARN of the SQS queue for rekognition video updates."
   value       = module.sns.aws_sqs_queue_rekognition_video_updates
 }
+
 
 output "aws_sqs_queue_policy_allow_sns_send_message_queue_url" {
   description = "URL of the SQS queue policy that allows SNS to send messages."
@@ -189,3 +199,4 @@ output "aws_dynamodb_table_video_job_table_name" {
 output "aws_dynamodb_table_video_job_table_arn" {
   value = module.dynamodb.aws_dynamodb_table_video_job_table_arn
 }
+

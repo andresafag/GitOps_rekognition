@@ -58,22 +58,10 @@ def handler(event, context):
             print(f"Retrieved connection_id: {connection_id}, domainname: {domainname}")
             
             # Get all labels from Rekognition with pagination
-            all_labels = []
-            next_token = None
-            
-            while True:
-                params = {'JobId': job_id}
-                if next_token:
-                    params['NextToken'] = next_token
-                
-                response = rekognition.get_label_detection(**params)
-                labels = response.get('Labels', [])
-                all_labels.extend(labels)
-                
-                next_token = response.get('NextToken')
-                if not next_token:
-                    break
-            
+            all_labels = []            
+            params = {'JobId': job_id, "MaxResults": 30}
+            response = rekognition.get_label_detection(**params)
+            all_labels = response.get('Labels', [])
             print(f"Total labels found: {len(all_labels)}")
             
             # Send results back to client via WebSocket

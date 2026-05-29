@@ -29,6 +29,11 @@ variable "integration_uri" {
     type        = string
 }
 
+variable "integration_uri_ping_route_arn" {
+    description = "ARN of the Lambda function that issues presigned URLs, used for API Gateway integration."
+    type        = string
+}
+
 variable "aws_cloudwatch_log_group_api_gateway_logs_arn" {
     description = "ARN of the CloudWatch Log Group for API Gateway access logs."
     type        = string

@@ -65,6 +65,10 @@ variable "api_gateway_http_execution_arn" {
     type        = string
 }
 
+variable "api_gateway_websocket_execution_arn"{
+    type    = string    
+}
+
 variable "sqs_queue_image_notifications_arn" {
     description = "ARN of the SQS queue for image upload notifications."
     type        = string
@@ -78,6 +82,10 @@ variable "aws_sns_topic_rekognition_video_updates_arn" {
   type = string
 }
 
+variable "role_ping_pong" {
+    type = string
+}
+
 variable "role_video_proccessing_arn" {
     description = "IAM role for the video processing Lambda function."
     type        = string
@@ -87,6 +95,7 @@ variable "aws_sqs_queue_rekognition_video_updates_arn" {
   description = "ARN of the SQS queue for rekognition video updates."
   type        = string
 }
+
 
 variable "aws_sqs_queue_policy_allow_sns_send_message_queue_url" {
     description = "URL of the SQS queue policy that allows SNS to send messages."

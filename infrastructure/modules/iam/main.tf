@@ -80,6 +80,34 @@ resource "aws_iam_role_policy" "video_proccessing_lambda_policy" {
   })
 }
 
+resource "aws_iam_role_policy" "ping_pong_lambda_policy" {
+  name = "pingpong-policy"
+  role = aws_iam_role.ping_pong_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "execute-api:ManageConnections"
+        ]
+        Resource = "${var.api_gateway_websocket_execution_arn}/*"
+      },
+            {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      }
+      ]
+
+  })
+}
+  
+
 resource "aws_iam_role_policy" "rekognition_lambda_policy" {
   name = "${var.rekognition_lambda_name}-policy"
   role = aws_iam_role.rekognition_lambda_role.id
@@ -94,24 +122,21 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
           "rekognition:RecognizeCelebrities",
           "rekognition:DetectModerationLabels",
           "rekognition:StartLabelDetection",
-          "rekognition:GetLabelDetection"
+          "rekognition:GetLabelDetection",
+          "rekognition:DetectText"
         ]
         Resource = "*"
       },
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:GetBucketLocation",
+          "s3:GetObjectMetadata",
+          "s3:DeleteObject"
         ]
         Resource = "${var.aws_s3_bucket_image_bucket_arn}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetBucketLocation"
-        ]
-        Resource = "${var.aws_s3_bucket_image_bucket_arn}"
       },
       {
         Effect = "Allow"
@@ -397,6 +422,25 @@ resource "aws_iam_role" "rekognition_lambda_role" {
   tags = local.lambda_tags
 }
 
+
+resource "aws_iam_role" "ping_pong_role" {
+  name = "pingpong-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = local.lambda_tags
+}
 
 
 resource "aws_iam_role" "rekognition_service_role" {

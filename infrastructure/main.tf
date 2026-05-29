@@ -12,6 +12,7 @@ locals {
 module "apigateway" {
   source   = "./modules/apigateway"
   integration_uri = module.lambda.aws_lambda_function_presigned_url_arn
+  integration_uri_ping_route_arn = module.lambda.aws_lambda_function_ping_pong_arn
   aws_cloudwatch_log_group_api_gateway_logs_arn = module.cloudwatch.aws_cloudwatch_log_group_api_gateway_logs_arn
   aws_iam_role_apigw_log_role_arn = module.iam.aws_iam_role_apigw_log_role_arn
 }
@@ -33,6 +34,8 @@ module "lambda" {
   aws_sqs_queue_rekognition_video_updates_arn = module.sns.aws_sqs_queue_rekognition_video_updates
   aws_sqs_queue_policy_allow_sns_send_message_queue_url = module.sns.aws_sqs_queue_policy_allow_sns_send_message_queue_url
   aws_dynamodb_table_video_job_table_name = module.dynamodb.aws_dynamodb_table_video_job_table_name
+  api_gateway_websocket_execution_arn = module.apigateway.api_gateway_websocket_execution_arn
+  role_ping_pong = module.iam.role_ping_pong
 }
 
 
@@ -59,6 +62,7 @@ module "iam" {
   aws_sns_topic_rekognition_video_updates_arn = module.sns.aws_sns_topic_rekognition_video_updates_arn
   aws_sqs_queue_rekognition_video_updates = module.sns.aws_sqs_queue_rekognition_video_updates
   aws_dynamodb_table_video_job_table_arn = module.dynamodb.aws_dynamodb_table_video_job_table_arn
+  aws_sqs_queue_rekognition_text_updates = module.sns.aws_sqs_queue_rekognition_text_updates
 }
 
 module "cloudfront" {

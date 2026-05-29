@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link type="image/png" sizes="32x32" rel="icon" href="reconocimiento.png">
   <title>Rekognition Upload</title>
+  <link type="image/png" sizes="32x32" rel="icon" href="reconocimiento.png">
   <script src="nav.js" defer></script>
-  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.3.0/dist/compressor.min.js"></script>
+  <script src="config.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
     <div id="navbar-placeholder"></div>
-    <h1>🖼️ AI Image Analyzer</h1>
-    <p>Discover what's in your images or videos with advanced AI detection</p>
+    <h1>🖼️ AI Text Analyzer</h1>
+    <p>Discover what's in your text with advanced AI detection</p>
   </header>
 
   <section class="hero">
@@ -45,37 +45,17 @@
 
   <main>
     <section class="upload-section">
-      <h2>Analyze Your Image</h2>
+      <h2>Detect the text in your image</h2>
 
       <label class="file-upload">
         <input type="file" id="fileInput" accept="image/jpeg,image/png" />
         <div class="upload-area">
           <div class="upload-icon">📁</div>
-          <div class="upload-text">Choose an image or drag & drop</div>
+          <div class="upload-text">Choose an image with text or drag & drop</div>
           <div class="upload-hint">ℹ️ Only JPEG and PNG formats supported, up to 10MB</div>
         </div>
       </label>
-
-      <fieldset class="detection-options">
-        <legend>Choose Detection Type</legend>
-        <label class="option">
-          <input type="radio" name="detectionMode" value="labels" checked />
-          <span class="option-icon">🏷️</span>
-          <span class="option-text">Label Detection</span>
-          <span class="option-desc">Identify objects, scenes, and activities</span>
-        </label>
-        <label class="option">
-          <input type="radio" name="detectionMode" value="celebrity" />
-          <span class="option-icon">⭐</span>
-          <span class="option-text">Celebrity Detection</span>
-          <span class="option-desc">Recognize famous people and faces</span>
-        </label>
-      </fieldset>
-
-      <button id="uploadButton" disabled>🚀 Analyze Image</button>
-      <progress id="barraProgreso" value="0" max="100" hidden></progress>
-      <span id="textoProgreso" hidden>0%</span>
-
+      <button id="uploadButton" disabled>🚀 Analyze text</button>
       <div id="status" class="status-message"></div>
     </section>
 
@@ -84,12 +64,13 @@
       <div class="results-content">
         <div class="image-preview">
           <img id="uploadedImage" alt="Analyzed image" />
+          <div id="textData"></div>
         </div>
         <div id="analysisData" class="analysis-results"></div>
       </div>
     </section>
   </main>
-  <script src="script.js" defer></script>
+  <script src="detext.js" defer></script>
   <script src="site.js"></script>
 </body>
 </html>

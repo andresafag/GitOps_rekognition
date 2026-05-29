@@ -86,3 +86,49 @@ resource "aws_sqs_queue_policy" "allow_sns_send_message" {
     ]
   })
 }
+
+
+//------------------------------------------------------------
+
+resource "aws_sns_topic" "rekognition_text_updates" {
+  name = "rekognition-text-analysis-topic"
+}
+
+resource "aws_sns_topic_subscription" "rekognition_text_updates_sqs" {
+  topic_arn            = aws_sns_topic.rekognition_text_updates.arn
+  protocol             = "sqs"
+  endpoint             = aws_sqs_queue.aws_sqs_queue_rekognition_text_updates.arn
+  raw_message_delivery = false
+}
+
+resource "aws_sqs_queue" "aws_sqs_queue_rekognition_text_updates" {
+  name                       = "rekognition-text-updates-queue"
+  visibility_timeout_seconds = 180
+  message_retention_seconds  = 345600
+  receive_wait_time_seconds  = 10
+  sqs_managed_sse_enabled    = true
+}
+
+resource "aws_sqs_queue_policy" "allow_sns_send_message_text" {
+  queue_url = aws_sqs_queue.aws_sqs_queue_rekognition_text_updates.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowSNSEventDelivery"
+        Effect = "Allow"
+        Principal = {
+          Service = "sns.amazonaws.com"
+        }
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.aws_sqs_queue_rekognition_text_updates.arn
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" = aws_sns_topic.rekognition_text_updates.arn
+          }
+        }
+      }
+    ]
+  })
+}

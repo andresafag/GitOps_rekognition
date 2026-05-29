@@ -17,10 +17,17 @@ data "archive_file" "rekognition_lambda" {
   output_path = "${path.module}/../../lambda/rekognition_consumer.zip"
 }
 
+
 data "archive_file" "video_proccessing" {
   type        = "zip"
   source_dir  = "${path.module}/../../../lambda/video_proccessing"
   output_path = "${path.module}/../../lambda/video_proccessing.zip"
+}
+
+data "archive_file" "ping_pong" {
+  type        = "zip"
+  source_dir  = "${path.module}/../../../lambda/ping_pong"
+  output_path = "${path.module}/../../lambda/ping_pong.zip"
 }
 
 resource "aws_lambda_function" "presigned_url" {
@@ -66,6 +73,7 @@ resource "aws_lambda_function" "rekognition_consumer" {
   runtime          = var.runtime_version
   role             = var.role_rekognition_consumer_arn
 
+
   environment {
     variables = {
       IMAGE_BUCKET_NAME = var.image_bucket_name
@@ -75,6 +83,18 @@ resource "aws_lambda_function" "rekognition_consumer" {
       VIDEO_JOB_TABLE = var.aws_dynamodb_table_video_job_table_name
     }
   }
+
+  tags = local.lambda_tags
+}
+
+
+resource "aws_lambda_function" "ping_pong" {
+  function_name    = "ping_pong_function"
+  filename         = data.archive_file.ping_pong.output_path
+  source_code_hash = data.archive_file.ping_pong.output_base64sha256
+  handler          = var.lambda_handler
+  runtime          = var.runtime_version
+  role             = var.role_ping_pong 
 
   tags = local.lambda_tags
 }
@@ -92,6 +112,14 @@ resource "aws_lambda_permission" "allow_apigw_invocation" {
   function_name = var.presigned_url_lambda_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${var.api_gateway_http_execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_ping" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = "ping_pong_function"
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${var.api_gateway_websocket_execution_arn}/*/*"
 }
 
 resource "aws_lambda_permission" "allow_video_proccessing_invocation" {

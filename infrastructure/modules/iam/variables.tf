@@ -54,6 +54,10 @@ variable "aws_sqs_queue_rekognition_video_updates" {
   type        = string  
 }
 
+variable "aws_sqs_queue_rekognition_text_updates" {
+  type = string
+}
+
 variable "aws_dynamodb_table_video_job_table_arn" {
   type = string
 }

@@ -1,11 +1,6 @@
 const apiBaseUrl = CONFIG.BASE_URL;
 const socket = new WebSocket(CONFIG.SOCKET);
 const wss = CONFIG.WSS;
-const fileUpload = document.querySelector('.file-upload');
-const uploadText = document.querySelector('.upload-text');
-const uploadIcon = document.querySelector('.upload-icon');
-const uploadButton = document.getElementById('uploadButton');
-
 
 console.log('API Base URL:', apiBaseUrl);
 console.log('WebSocket URL:', CONFIG.SOCKET);
@@ -13,6 +8,7 @@ console.log('WSS URL:', CONFIG.WSS);
 let intervalId;
 let pingInterval;
 let reducedImageFile = null;
+const uploadButton = document.getElementById('uploadButton');
 
 function startHeartBeat(){
   pingInterval = setInterval(()=>{
@@ -103,13 +99,12 @@ async function reducirTamanoImagen(file, maxDimension = 800, calidad = 0.6) {
   return new Promise((resolve, reject) => {
     new Compressor(file, {
       quality: calidad,
-      maxWidth: maxDimension,   
-      maxHeight: maxDimension,  
-      convertSize: 0,      
+      maxWidth: maxDimension,   // Aplica la dimensión máxima que pasas por parámetro
+      maxHeight: maxDimension,  // Aplica la dimensión máxima que pasas por parámetro
+      convertSize: 0,      // No procesa si el archivo original ya es menor a ~200 KB
       mimeType: 'image/jpeg',
       success(result) {
         const nuevoNombre = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-        console.log("nuevoNombre",nuevoNombre)
         const readyFile = new File([result], nuevoNombre, { type: result.type });
         
         // Resolvemos la promesa devolviendo el archivo listo
@@ -124,11 +119,6 @@ async function reducirTamanoImagen(file, maxDimension = 800, calidad = 0.6) {
 }
 
 
-
-function getSelectedDetectionMode() {
-  const selected = document.querySelector('input[name="detectionMode"]:checked');
-  return selected ? selected.value : 'labels';
-}
 
 function displayResultsExplicit(data) {
   resultsEl.style.display = 'block';
@@ -154,7 +144,6 @@ function displayResults(data, detectionMode, filename, type) {
 
   let imgElement = document.querySelector('#uploadedImage');
   
-  // Si la imagen no existe en el HTML, la creamos y la metemos estrictamente en .image-preview
   if (!imgElement) {
     imgElement = document.createElement('img');
     imgElement.id = 'uploadedImage';
@@ -162,7 +151,7 @@ function displayResults(data, detectionMode, filename, type) {
 
     const imagePreview = resultsEl.querySelector('.image-preview');
     if (imagePreview) {
-      imagePreview.appendChild(imgElement); // La metemos en su contenedor correcto
+      imagePreview.appendChild(imgElement);
     } else {
       resultsEl.prepend(imgElement);
     }
@@ -170,64 +159,30 @@ function displayResults(data, detectionMode, filename, type) {
 
   imgElement.src = `data:${type};base64,${filename}`;
 
-  if (detectionMode === 'labels') {
-    const section = document.createElement('div');
-    section.className = 'result-section';
-    section.innerHTML = '<h3>📋 Detected Labels</h3>';
+  const section = document.createElement('div');
+  section.className = 'result-section';
+  section.innerHTML = '<h3>📋 Detected Labels</h3>';
 
-    for (const itemData of data) {
-      const item = document.createElement('div');
-      item.className = 'result-item';
+  for (const itemData of data) {
+    const item = document.createElement('div');
+    item.className = 'result-item';
 
-      item.innerHTML = `
-        <strong>${itemData.name}</strong>
-        <span>- Confidence: <span class="confidence">${itemData.confidence}%</span></span>
-      `;
-      section.appendChild(item);
-    }
-
-    clearInterval(intervalId);
-    statusEl.textContent = 'Done!';
-    analysisDataEl.appendChild(section);
-
-  } else if (detectionMode === 'celebrity') {
-    const section = document.createElement('div');
-    section.className = 'result-section';
-    section.innerHTML = '<h3>⭐ Recognized Celebrities</h3>';
-    
-    if (data.length === 0) {
-      const noResults = document.createElement('div');
-      noResults.textContent = 'No celebrities recognized in the image.';
-      section.appendChild(noResults);
-      analysisDataEl.appendChild(section);
-      clearInterval(intervalId); // Aseguramos detener el loading aquí también
-      statusEl.textContent = 'Done!';
-      return;
-    }
-
-    for (const itemData of data) {
-      const item = document.createElement('div');
-      item.className = 'result-item';
-      
-      item.innerHTML = `
-        <strong>${itemData.name}</strong>
-        <span>- Confidence: <span class="confidence">${itemData.confidence}%</span></span>
-        ${itemData.urls && itemData.urls.length > 0 
-          ? `<div class="links-section">
-              ${itemData.urls.map(url => `
-                <br>🔗 <a href="https://${url}" target="_blank">More info ${url}</a>
-              `).join('')}
-             </div>`
-          : ''}
-      `;
-      section.appendChild(item);
-    }
-    
-    analysisDataEl.appendChild(section);
-    clearInterval(intervalId);
-    statusEl.textContent = 'Done!';
+    item.innerHTML = `
+      <strong>${itemData.Text}</strong>
+      <span>- Confidence: <span class="confidence">${itemData.Confidence.toFixed(2)}%</span></span>
+    `;
+    section.appendChild(item);
   }
+  
+  analysisDataEl.appendChild(section);
+  clearInterval(intervalId);
+  statusEl.textContent = 'Done!';
 }
+
+const fileUpload = document.querySelector('.file-upload');
+const uploadText = document.querySelector('.upload-text');
+const uploadIcon = document.querySelector('.upload-icon');
+
 
 fileInput.addEventListener('change', async () => {
   const file = fileInput.files[0];
@@ -254,6 +209,8 @@ fileInput.addEventListener('change', async () => {
 });
 
 uploadButton.addEventListener('click', async () => {
+  // Use reduced image instead of original
+  const detectionMode = '/text';
   const file = reducedImageFile;
 
   if (!connection_id){
@@ -281,14 +238,13 @@ uploadButton.addEventListener('click', async () => {
     return;
   }
 
-  const detectionMode = getSelectedDetectionMode();
-  const routePath = detectionMode === 'celebrity' ? '/celebrity' : '/labels';
-  const apiEndpoint = `${apiBaseUrl}${routePath}`;
+  const apiEndpoint = `${apiBaseUrl}${detectionMode}`;
 
   statusEl.textContent = `🔗 Requesting upload URL for ${detectionMode} detection...`;
   statusEl.className = 'status-message';
   console.log('Requesting presigned URL from API:', apiEndpoint, 'with detection mode:', detectionMode);
-
+  console.log("imagen nombre " + reducedImageFile.name)
+  console.log("imagen tipo " + reducedImageFile.type)
   try {
     const presignedResponse = await fetch(apiEndpoint, {
       method: 'POST',
@@ -296,9 +252,12 @@ uploadButton.addEventListener('click', async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type,
+        filename: reducedImageFile.name,
+        contentType: reducedImageFile.type,
         WebSocketConnectionId: connection_id,
+        detectionMode: detectionMode, 
+        imageId: reducedImageFile, 
+        domainName: wss 
       }),
     });
 
@@ -317,11 +276,11 @@ uploadButton.addEventListener('click', async () => {
     const uploadResponse = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': file.type,
-        'x-amz-meta-connection_id': connection_id, 
-        'x-amz-meta-detection_mode': detectionMode,
-        'x-amz-meta-domainName': wss, 
-        'x-amz-meta-image_id': data.lastpart, 
+        'Content-Type': reducedImageFile.type,
+        'x-amz-meta-connection_id': encodeURIComponent(connection_id), 
+        'x-amz-meta-detection_mode': encodeURIComponent(detectionMode),
+        'x-amz-meta-domainName': encodeURIComponent(wss), 
+        'x-amz-meta-image_id': encodeURIComponent(data.lastpart), 
         'x-amz-meta-stage': 'default'
       },
       body: file,
@@ -334,8 +293,6 @@ uploadButton.addEventListener('click', async () => {
 
     statusEl.textContent = `✅ Upload successful! Starting AI analysis.....`;
     statusEl.className = 'status-message success';
-
-
     const randomMessages = [
       '🔍 Analyzing the image...',
       '🤖 AI is working on it...',
@@ -355,12 +312,16 @@ uploadButton.addEventListener('click', async () => {
     statusEl.textContent = `❌ Error: ${error.message}`;
     statusEl.className = 'status-message error';
   } finally {
+    // 1. Limpia el archivo seleccionado
     fileInput.value = ''; 
     reducedImageFile = null;
     
+    // 2. Restaura los textos e íconos originales
     uploadIcon.textContent = '📁';
     uploadText.textContent = 'Choose an image or drag & drop';
     
-    fileUpload.classList.remove('is-uploaded');  
+    // 3. Remueve los estilos de éxito
+    fileUpload.classList.remove('is-uploaded');
+    
   }
 });
