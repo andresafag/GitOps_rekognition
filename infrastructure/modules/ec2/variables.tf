@@ -13,13 +13,14 @@ variable "instance_type" {
 variable "key_name" {
   description = "Optional key pair name for SSH access"
   type        = string
-  default     = ""
+  default     = "original"
 }
 
 variable "allowed_cidr" {
   description = "CIDR to allow inbound access to Prometheus (port 9090)"
   type        = string
-  default     = "0.0.0.0/0"
+  # Leave empty to restrict access to the VPC CIDR (in-account VPC traffic only)
+  default     = ""
 }
 
 variable "prometheus_port" {

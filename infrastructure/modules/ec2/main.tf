@@ -15,20 +15,21 @@ data "aws_vpc" "default" {
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_default_vpc.default.id]
+    values = [data.aws_vpc.default.id]
   }
 }
+
 
 resource "aws_security_group" "prometheus_sg" {
   name        = "prometheus-yace-sg"
   description = "Allow Prometheus access on port ${var.prometheus_port}"
-  vpc_id      = data.aws_default_vpc.default.id
+  vpc_id      = data.aws_vpc.default.id
 
   ingress {
     from_port   = var.prometheus_port
     to_port     = var.prometheus_port
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_cidr]
+    cidr_blocks = var.allowed_cidr != "" ? [var.allowed_cidr] : [data.aws_vpc.default.cidr_block]
     description = "Prometheus UI"
   }
 
