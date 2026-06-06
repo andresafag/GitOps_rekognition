@@ -19,6 +19,7 @@
 - [🚀 GitOps\_rekognition](#-gitops_rekognition)
 - [🧭 Table of Contents](#-table-of-contents)
 - [📌 Overview](#-overview)
+- [Demo](#demo)
 - [🏗️ Architecture](#️-architecture)
   - [🔥 Core AWS Services Used](#-core-aws-services-used)
   - [🧱 High-Level Architecture](#-high-level-architecture)
@@ -68,6 +69,11 @@
 The platform allows users to upload images and receive **real-time AI-powered image analysis** using **Amazon Rekognition**.
 
 The infrastructure is fully provisioned using **Terraform** and follows production-grade AWS architecture patterns.
+
+---
+
+# Demo
+[rekoglabelify.com](http://rekoglabelify.com)
 
 ---
 
