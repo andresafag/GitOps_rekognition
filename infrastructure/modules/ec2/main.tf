@@ -86,25 +86,38 @@ resource "aws_instance" "prometheus" {
 
     mkdir -p /etc/prometheus
 
-    # Prometheus config: scrape YACE exporter on localhost:9116
+    # Prometheus config: scrape CloudWatch exporter on localhost:9106
     cat > /etc/prometheus/prometheus.yml <<'PROMY'
 global:
   scrape_interval: 30s
 scrape_configs:
-  - job_name: 'yace'
-    static_configs:
-      - targets: ['localhost:9116']
+      - job_name: 'cloudwatch_exporter'
+        static_configs:
+          - targets: ['localhost:9106']
 PROMY
 
+    # Write a small sample CloudWatch exporter config (exports Lambda metrics)
+    mkdir -p /etc/yace
+    cat > /etc/yace/config.yml <<'YACECFG'
+region: ${var.aws_region}
+metrics:
+  - namespace: AWS/Lambda
+    names: [Invocations, Errors, Duration]
+    dimensions: [[FunctionName]]
+    statistics: [Sum, Average]
+    period_seconds: 300
+YACECFG
+
     # Pull images (best-effort) and run containers
-    docker pull nerdswords/yet-another-cloudwatch-exporter:latest || true
+    docker pull prom/cloudwatch-exporter:latest || true
     docker pull prom/prometheus:latest || true
 
     # Remove existing containers if present
     docker rm -f yace || true
     docker rm -f prometheus || true
 
-    # Create systemd unit for YACE so it runs on boot and restarts
+  [...]
+    # Create systemd unit for CloudWatch exporter so it runs on boot and restarts
     cat > /etc/systemd/system/yace.service <<'YACESVC'
 [Unit]
 Description=YACE CloudWatch Exporter (container)
@@ -114,9 +127,9 @@ Requires=docker.service
 [Service]
 Restart=always
 RestartSec=5
-ExecStartPre=/usr/bin/docker pull nerdswords/yet-another-cloudwatch-exporter:latest
+ExecStartPre=/usr/bin/docker pull prom/cloudwatch-exporter:latest
 ExecStartPre=/usr/bin/docker rm -f yace || true
-ExecStart=/usr/bin/docker run --name yace -p 9116:9116 -e AWS_REGION=${var.aws_region} nerdswords/yet-another-cloudwatch-exporter:latest
+ExecStart=/usr/bin/docker run --name yace -p 9106:9106 -v /etc/yace/config.yml:/config/config.yml prom/cloudwatch-exporter:latest --config.file=/config/config.yml
 ExecStop=/usr/bin/docker stop -t 10 yace || true
 TimeoutStartSec=0
 
