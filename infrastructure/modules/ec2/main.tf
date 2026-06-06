@@ -33,6 +33,14 @@ resource "aws_security_group" "prometheus_sg" {
     description = "Prometheus UI"
   }
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_cidr != "" ? [var.allowed_cidr] : [data.aws_vpc.default.cidr_block]
+    description = "SSH"
+  }
+
   # allow egress
   egress {
     from_port   = 0
@@ -92,17 +100,54 @@ PROMY
     docker pull nerdswords/yet-another-cloudwatch-exporter:latest || true
     docker pull prom/prometheus:latest || true
 
+    # Remove existing containers if present
     docker rm -f yace || true
-    docker run -d --name yace -p 9116:9116 \
-      --restart unless-stopped \
-      -e AWS_REGION=${var.aws_region} \
-      nerdswords/yet-another-cloudwatch-exporter:latest || true
-
     docker rm -f prometheus || true
-    docker run -d --name prometheus -p ${var.prometheus_port}:9090 \
-      --restart unless-stopped \
-      -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
-      prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml || true
+
+    # Create systemd unit for YACE so it runs on boot and restarts
+    cat > /etc/systemd/system/yace.service <<'YACESVC'
+[Unit]
+Description=YACE CloudWatch Exporter (container)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=/usr/bin/docker pull nerdswords/yet-another-cloudwatch-exporter:latest
+ExecStartPre=/usr/bin/docker rm -f yace || true
+ExecStart=/usr/bin/docker run --name yace -p 9116:9116 -e AWS_REGION=${var.aws_region} nerdswords/yet-another-cloudwatch-exporter:latest
+ExecStop=/usr/bin/docker stop -t 10 yace || true
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+YACESVC
+
+    # Create systemd unit for Prometheus so it runs on boot and restarts
+    cat > /etc/systemd/system/prometheus.service <<'PROMSVC'
+[Unit]
+Description=Prometheus (container)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=/usr/bin/docker pull prom/prometheus:latest
+ExecStartPre=/usr/bin/docker rm -f prometheus || true
+ExecStart=/usr/bin/docker run --name prometheus -p ${var.prometheus_port}:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml
+ExecStop=/usr/bin/docker stop -t 10 prometheus || true
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+PROMSVC
+
+    # Reload systemd, enable and start services
+    systemctl daemon-reload || true
+    systemctl enable --now yace.service || true
+    systemctl enable --now prometheus.service || true
   EOF
 }
 
