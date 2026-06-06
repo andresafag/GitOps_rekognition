@@ -56,33 +56,53 @@ resource "aws_instance" "prometheus" {
 
   user_data = <<-EOF
     #!/bin/bash
-    set -e
-    yum update -y
-    amazon-linux-extras install docker -y || yum install -y docker
-    service docker start
-    usermod -a -G docker ec2-user
+    set -ex
+    exec > /var/log/user-data.log 2>&1
+
+    # Update and install docker with retries (network may be unavailable in some subnets)
+    yum update -y || true
+    if ! command -v docker >/dev/null 2>&1; then
+      amazon-linux-extras enable docker || true
+      yum install -y docker || yum install -y docker-engine || true
+    fi
+
+    systemctl enable docker || true
+    systemctl start docker || true
+
+    # wait for docker daemon
+    for i in 1 2 3 4 5; do
+      docker version >/dev/null 2>&1 && break || sleep 5
+    done
+
+    usermod -a -G docker ec2-user || true
+
     mkdir -p /etc/prometheus
 
     # Prometheus config: scrape YACE exporter on localhost:9116
-    cat > /etc/prometheus/prometheus.yml <<PROMY
-    global:
-      scrape_interval: 30s
-    scrape_configs:
-      - job_name: 'yace'
-        static_configs:
-          - targets: ['localhost:9116']
+    cat > /etc/prometheus/prometheus.yml <<'PROMY'
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: 'yace'
+    static_configs:
+      - targets: ['localhost:9116']
 PROMY
 
-    # Run YACE (CloudWatch exporter) and Prometheus via Docker
+    # Pull images (best-effort) and run containers
+    docker pull nerdswords/yet-another-cloudwatch-exporter:latest || true
+    docker pull prom/prometheus:latest || true
+
+    docker rm -f yace || true
     docker run -d --name yace -p 9116:9116 \
       --restart unless-stopped \
       -e AWS_REGION=${var.aws_region} \
-      nerdswords/yet-another-cloudwatch-exporter:latest
+      nerdswords/yet-another-cloudwatch-exporter:latest || true
 
+    docker rm -f prometheus || true
     docker run -d --name prometheus -p ${var.prometheus_port}:9090 \
       --restart unless-stopped \
       -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
-      prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml
+      prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml || true
   EOF
 }
 
