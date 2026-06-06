@@ -63,6 +63,9 @@ module "iam" {
   aws_sqs_queue_rekognition_video_updates = module.sns.aws_sqs_queue_rekognition_video_updates
   aws_dynamodb_table_video_job_table_arn = module.dynamodb.aws_dynamodb_table_video_job_table_arn
   aws_sqs_queue_rekognition_text_updates = module.sns.aws_sqs_queue_rekognition_text_updates
+  # If an existing instance profile named "yace-instance-profile" already exists in the account,
+  # pass it here so the module will reference it instead of trying to create it.
+  yace_instance_profile_name = "yace-instance-profile"
 }
 
 module "cloudfront" {
