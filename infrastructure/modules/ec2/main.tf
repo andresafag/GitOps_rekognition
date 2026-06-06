@@ -37,7 +37,7 @@ resource "aws_security_group" "prometheus_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr != "" ? [var.allowed_cidr] : [data.aws_vpc.default.cidr_block]
+    cidr_blocks = "0.0.0.0/0"
     description = "SSH"
   }
 
