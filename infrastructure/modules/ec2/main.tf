@@ -10,8 +10,11 @@ data "aws_ami" "amazon_linux" {
 
 data "aws_default_vpc" "default" {}
 
-data "aws_subnet_ids" "default" {
-  vpc_id = data.aws_default_vpc.default.id
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_default_vpc.default.id]
+  }
 }
 
 resource "aws_security_group" "prometheus_sg" {
@@ -41,10 +44,10 @@ resource "aws_security_group" "prometheus_sg" {
 resource "aws_instance" "prometheus" {
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
-  subnet_id                   = data.aws_subnet_ids.default.ids[0]
+  subnet_id                   = data.aws_subnets.default.ids[0]
   vpc_security_group_ids      = [aws_security_group.prometheus_sg.id]
   associate_public_ip_address = true
-  iam_instance_profile        = try(var.iam_instance_profile, null)
+  iam_instance_profile        = var.iam_instance_profile != "" ? var.iam_instance_profile : null
 
   tags = merge({ Name = var.instance_name }, var.tags)
 
