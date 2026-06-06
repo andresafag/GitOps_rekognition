@@ -476,3 +476,67 @@ resource "aws_iam_role_policy_attachment" "rekognition_start_label_detection_att
   role       = aws_iam_role.rekognition_service_role.name
   policy_arn = aws_iam_policy.rekognition_start_label_detection_policy.arn
 }
+
+# YACE / EC2 exporter role and policy ---------------------------------
+resource "aws_iam_policy" "yace_cloudwatch_policy" {
+  name        = "YACECloudWatchReadPolicy"
+  description = "Allows YACE (running on EC2) to read CloudWatch metrics and list Lambda functions"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:GetMetricData",
+          "cloudwatch:GetMetricStatistics",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:DescribeAlarms"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:GetLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:ListFunctions",
+          "lambda:GetFunctionConfiguration"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "yace_ec2_role" {
+  name = "yace-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "yace_policy_attach" {
+  role       = aws_iam_role.yace_ec2_role.name
+  policy_arn = aws_iam_policy.yace_cloudwatch_policy.arn
+}
+
+resource "aws_iam_instance_profile" "yace_instance_profile" {
+  name = "yace-instance-profile"
+  role = aws_iam_role.yace_ec2_role.name
+}

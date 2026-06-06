@@ -30,3 +30,11 @@ output "aws_iam_role_rekognition_service_role" {
 output "aws_iam_role_video_proccessing_lambda_role" {
   value = aws_iam_role.video_proccessing_lambda_role.arn
 }
+
+output "aws_iam_role_yace_ec2_role_arn" {
+  value = aws_iam_role.yace_ec2_role.arn
+}
+
+output "aws_iam_instance_profile_yace" {
+  value = aws_iam_instance_profile.yace_instance_profile.name
+}

@@ -107,3 +107,12 @@ module "route_53" {
 module "dynamodb" {
   source = "./modules/dynamodb"
 }
+
+module "ec2" {
+  source = "./modules/ec2"
+  aws_region = var.aws_region
+  iam_instance_profile = module.iam.aws_iam_instance_profile_yace
+  tags = {
+    project = "rekognition-infrastructure"
+  }
+}
