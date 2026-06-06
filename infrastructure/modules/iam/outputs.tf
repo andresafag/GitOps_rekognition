@@ -36,5 +36,5 @@ output "aws_iam_role_yace_ec2_role_arn" {
 }
 
 output "aws_iam_instance_profile_yace" {
-  value = aws_iam_instance_profile.yace_instance_profile.name
+  value = var.yace_instance_profile_name != "" ? var.yace_instance_profile_name : (length(aws_iam_instance_profile.yace_instance_profile) > 0 ? aws_iam_instance_profile.yace_instance_profile[0].name : "")
 }

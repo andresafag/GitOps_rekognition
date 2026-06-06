@@ -61,3 +61,15 @@ variable "aws_sqs_queue_rekognition_text_updates" {
 variable "aws_dynamodb_table_video_job_table_arn" {
   type = string
 }
+
+variable "yace_instance_profile_name" {
+  description = "If set, use an existing instance profile name for YACE instead of creating one"
+  type        = string
+  default     = ""
+}
+
+variable "create_yace_instance_profile" {
+  description = "If false, do not create the YACE instance profile. When true and `yace_instance_profile_name` is empty, the module will create it."
+  type        = bool
+  default     = true
+}

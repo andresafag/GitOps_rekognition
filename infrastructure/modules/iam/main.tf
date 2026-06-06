@@ -536,7 +536,15 @@ resource "aws_iam_role_policy_attachment" "yace_policy_attach" {
   policy_arn = aws_iam_policy.yace_cloudwatch_policy.arn
 }
 
+// Create instance profile only when the user did not provide an existing name
 resource "aws_iam_instance_profile" "yace_instance_profile" {
-  name = "yace-instance-profile"
-  role = aws_iam_role.yace_ec2_role.name
+  count = var.yace_instance_profile_name == "" && var.create_yace_instance_profile ? 1 : 0
+  name  = "yace-instance-profile"
+  role  = aws_iam_role.yace_ec2_role.name
+}
+
+# If user supplied an existing instance profile name, reference it
+data "aws_iam_instance_profile" "yace_existing" {
+  count = var.yace_instance_profile_name != "" ? 1 : 0
+  name  = var.yace_instance_profile_name
 }
