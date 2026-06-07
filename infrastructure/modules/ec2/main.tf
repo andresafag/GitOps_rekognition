@@ -84,7 +84,7 @@ resource "aws_instance" "prometheus" {
 
     usermod -a -G docker ec2-user || true
 
-    mkdir -p /etc/prometheus
+    mkdir -p /etc/prometheus && mkdir -p /config/confg.yml
 
     # Prometheus config: Scrape CloudWatch exporter on localhost (works via network=host)
     cat > /etc/prometheus/prometheus.yml <<PROMY
@@ -138,7 +138,7 @@ Restart=always
 RestartSec=5
 ExecStartPre=/usr/bin/docker pull prom/cloudwatch-exporter:latest
 ExecStartPre=/usr/bin/docker rm -f yace || true
-ExecStart=/usr/bin/docker run --name yace --network=host -v /etc/yace/config.yml:/config.yml prom/cloudwatch-exporter:latest
+ExecStart=/usr/bin/docker run --name yace --network=host -v /etc/yace/config.yml:/config/config.yml prom/cloudwatch-exporter:latest
 ExecStop=/usr/bin/docker stop -t 10 yace || true
 TimeoutStartSec=0
 
