@@ -60,6 +60,12 @@ resource "aws_instance" "prometheus" {
   associate_public_ip_address = true
   iam_instance_profile        = var.iam_instance_profile != "" ? var.iam_instance_profile : null
   key_name = var.key_name
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # O "optional" si usas IMDSv1
+    http_put_response_hop_limit = 2          # <--- ESTO ES LO CRÍTICO PARA DOCKER
+    instance_metadata_tags      = "enabled"
+  }
   tags = merge({ Name = var.instance_name }, var.tags)
 
   user_data = <<-EOF
