@@ -491,7 +491,9 @@ resource "aws_iam_policy" "yace_cloudwatch_policy" {
           "cloudwatch:GetMetricData",
           "cloudwatch:GetMetricStatistics",
           "cloudwatch:ListMetrics",
-          "cloudwatch:DescribeAlarms"
+          "cloudwatch:DescribeAlarms",
+          "cloudwatch:ListDashboards",
+          "cloudwatch:DescribeAlarmsForMetric"
         ]
         Resource = "*"
       },
@@ -500,7 +502,10 @@ resource "aws_iam_policy" "yace_cloudwatch_policy" {
         Action = [
           "logs:DescribeLogGroups",
           "logs:DescribeLogStreams",
-          "logs:GetLogEvents"
+          "logs:GetLogEvents",
+          "logs:FilterLogEvents",
+          "logs:GetQueryResults",
+          "logs:StartQuery"
         ]
         Resource = "arn:aws:logs:*:*:*"
       },
@@ -508,7 +513,9 @@ resource "aws_iam_policy" "yace_cloudwatch_policy" {
         Effect = "Allow"
         Action = [
           "lambda:ListFunctions",
-          "lambda:GetFunctionConfiguration"
+          "lambda:GetFunctionConfiguration",
+          "lambda:ListTags",
+          "lambda:GetPolicy"
         ]
         Resource = "*"
       }
