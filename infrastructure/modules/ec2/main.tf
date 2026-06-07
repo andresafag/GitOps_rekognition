@@ -103,18 +103,29 @@ region: ${var.aws_region}
 metrics:
   - aws_namespace: AWS/Lambda
     aws_metric_name: Invocations
-    aws_dimensions: [FunctionName]
+    aws_dimensions:
+      FunctionName: rekognition-presigned-url-lambda
     aws_statistics: [Sum, Average]
     period_seconds: 300
   - aws_namespace: AWS/Lambda
     aws_metric_name: Errors
-    aws_dimensions: [FunctionName]
+    aws_dimensions:
+      FunctionName: rekognition-consumer-lambda
     aws_statistics: [Sum, Average]
     period_seconds: 300
   - aws_namespace: AWS/Lambda
     aws_metric_name: Duration
-    aws_dimensions: [FunctionName]
+    aws_dimensions:
+      FunctionName: video_proccessing
     aws_statistics: [Sum, Average]
+    period_seconds: 300
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: ConcurrentExecutions
+    aws_statistics: [Maximum, Average]
+    period_seconds: 300
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: Throttles
+    aws_statistics: [Sum]
     period_seconds: 300
 YACECFG
 
