@@ -120,10 +120,6 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
-      - name: Terraform taint
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform taint 'module.ec2.aws_instance.prometheus'
-
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
