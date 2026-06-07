@@ -38,3 +38,7 @@ output "aws_iam_role_yace_ec2_role_arn" {
 output "aws_iam_instance_profile_yace" {
   value = var.yace_instance_profile_name != "" ? var.yace_instance_profile_name : (length(aws_iam_instance_profile.yace_instance_profile) > 0 ? aws_iam_instance_profile.yace_instance_profile[0].name : "")
 }
+
+output "aws_iam_instance_profile_prometheus" {
+  value = var.prometheus_instance_profile_name != "" ? var.prometheus_instance_profile_name : (length(aws_iam_instance_profile.prometheus_profile) > 0 ? aws_iam_instance_profile.prometheus_profile[0].name : "")
+}

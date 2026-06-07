@@ -548,3 +548,16 @@ data "aws_iam_instance_profile" "yace_existing" {
   count = var.yace_instance_profile_name != "" ? 1 : 0
   name  = var.yace_instance_profile_name
 }
+
+# Create Prometheus instance profile only when the user did not provide an existing name
+resource "aws_iam_instance_profile" "prometheus_profile" {
+  count = var.prometheus_instance_profile_name == "" && var.create_prometheus_instance_profile ? 1 : 0
+  name  = "prometheus-instance-profile"
+  role  = aws_iam_role.yace_ec2_role.name
+}
+
+# If user supplied an existing instance profile name for Prometheus, reference it
+data "aws_iam_instance_profile" "prometheus_existing" {
+  count = var.prometheus_instance_profile_name != "" ? 1 : 0
+  name  = var.prometheus_instance_profile_name
+}

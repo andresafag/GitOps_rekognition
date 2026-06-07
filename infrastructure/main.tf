@@ -114,7 +114,7 @@ module "dynamodb" {
 module "ec2" {
   source = "./modules/ec2"
   aws_region = var.aws_region
-  iam_instance_profile = module.iam.aws_iam_instance_profile_yace
+  iam_instance_profile = module.iam.aws_iam_instance_profile_prometheus
   tags = {
     project = "rekognition-infrastructure"
   }

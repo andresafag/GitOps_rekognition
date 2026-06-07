@@ -73,3 +73,15 @@ variable "create_yace_instance_profile" {
   type        = bool
   default     = true
 }
+
+variable "prometheus_instance_profile_name" {
+  description = "If set, use an existing instance profile name for Prometheus instead of creating one"
+  type        = string
+  default     = ""
+}
+
+variable "create_prometheus_instance_profile" {
+  description = "If false, do not create the Prometheus instance profile. When true and `prometheus_instance_profile_name` is empty, the module will create it."
+  type        = bool
+  default     = true
+}
