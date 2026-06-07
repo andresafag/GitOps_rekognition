@@ -115,14 +115,15 @@ jobs:
         with:
           terraform_version: "1.7.0"
           terraform_wrapper: false
-      - name: Terraform taint
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform taint module.ec2.aws_instance.prometheus
+
         
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
+      - name: Terraform taint
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform taint module.ec2.aws_instance.prometheus
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
