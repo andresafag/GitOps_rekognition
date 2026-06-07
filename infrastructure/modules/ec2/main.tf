@@ -86,8 +86,8 @@ resource "aws_instance" "prometheus" {
 
     mkdir -p /etc/prometheus
 
-    # Prometheus config: scrape CloudWatch exporter on localhost:9106
-    cat > /etc/prometheus/prometheus.yml <<'PROMY'
+    # Prometheus config: Scrape CloudWatch exporter on localhost (works via network=host)
+    cat > /etc/prometheus/prometheus.yml <<PROMY
 global:
   scrape_interval: 30s
 scrape_configs:
@@ -96,19 +96,29 @@ scrape_configs:
           - targets: ['localhost:9106']
 PROMY
 
-    # Write a small sample CloudWatch exporter config (exports Lambda metrics)
+    # Write Prometheus CloudWatch exporter config with the correct official schema
     mkdir -p /etc/yace
-    cat > /etc/yace/config.yml <<'YACECFG'
+    cat > /etc/yace/config.yml <<YACECFG
 region: ${var.aws_region}
 metrics:
-  - namespace: AWS/Lambda
-    names: [Invocations, Errors, Duration]
-    dimensions: [[FunctionName]]
-    statistics: [Sum, Average]
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: Invocations
+    aws_dimensions: [FunctionName]
+    aws_statistics: [Sum, Average]
+    period_seconds: 300
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: Errors
+    aws_dimensions: [FunctionName]
+    aws_statistics: [Sum, Average]
+    period_seconds: 300
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: Duration
+    aws_dimensions: [FunctionName]
+    aws_statistics: [Sum, Average]
     period_seconds: 300
 YACECFG
 
-    # Pull images (best-effort) and run containers
+    # Pull images (best-effort)
     docker pull prom/cloudwatch-exporter:latest || true
     docker pull prom/prometheus:latest || true
 
@@ -116,11 +126,10 @@ YACECFG
     docker rm -f yace || true
     docker rm -f prometheus || true
 
-  [...]
-    # Create systemd unit for CloudWatch exporter so it runs on boot and restarts
+    # Create systemd unit for CloudWatch exporter (Using network=host and proper mapping)
     cat > /etc/systemd/system/yace.service <<'YACESVC'
 [Unit]
-Description=YACE CloudWatch Exporter (container)
+Description=CloudWatch Exporter (container)
 After=docker.service
 Requires=docker.service
 
@@ -129,7 +138,7 @@ Restart=always
 RestartSec=5
 ExecStartPre=/usr/bin/docker pull prom/cloudwatch-exporter:latest
 ExecStartPre=/usr/bin/docker rm -f yace || true
-ExecStart=/usr/bin/docker run --name yace -p 9106:9106 -v /etc/yace/config.yml:/config/config.yml prom/cloudwatch-exporter:latest --config.file=/config/config.yml
+ExecStart=/usr/bin/docker run --name yace --network=host -v /etc/yace/config.yml:/config.yml prom/cloudwatch-exporter:latest
 ExecStop=/usr/bin/docker stop -t 10 yace || true
 TimeoutStartSec=0
 
@@ -137,7 +146,7 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 YACESVC
 
-    # Create systemd unit for Prometheus so it runs on boot and restarts
+    # Create systemd unit for Prometheus (Using network=host)
     cat > /etc/systemd/system/prometheus.service <<'PROMSVC'
 [Unit]
 Description=Prometheus (container)
@@ -149,7 +158,7 @@ Restart=always
 RestartSec=5
 ExecStartPre=/usr/bin/docker pull prom/prometheus:latest
 ExecStartPre=/usr/bin/docker rm -f prometheus || true
-ExecStart=/usr/bin/docker run --name prometheus -p ${var.prometheus_port}:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml
+ExecStart=/usr/bin/docker run --name prometheus --network=host -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml
 ExecStop=/usr/bin/docker stop -t 10 prometheus || true
 TimeoutStartSec=0
 
@@ -161,7 +170,8 @@ PROMSVC
     systemctl daemon-reload || true
     systemctl enable --now yace.service || true
     systemctl enable --now prometheus.service || true
-  EOF
+EOF
+
 }
 
 output "instance_id" {
