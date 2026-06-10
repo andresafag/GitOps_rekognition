@@ -47,19 +47,16 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          # Changed: added --sarif parameter
-          args: --severity-threshold=high --sarif --sarif-file-output=snyk-iac.sarif
+          args: --sarif --sarif-file-output=snyk-iac.sarif
 
       - name: Snyk Code (SAST) Scan
-        # Changed: swapped specialized python action out for universal node runner
         uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          # Changed: targeted 'code test' explicitly with format flags
           command: code test
-          args: --severity-threshold=high --sarif --sarif-file-output=snyk-code.sarif
+          args: --sarif --sarif-file-output=snyk-code.sarif
 
       - name: Snyk Open Source Scan
         uses: snyk/actions/python@master
@@ -67,8 +64,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          # Changed: appended --sarif layout structure flag
-          args: --all-projects --severity-threshold=high --sarif --sarif-file-output=snyk-oss.sarif
+          args: --all-projects --sarif --sarif-file-output=snyk-oss.sarif
 
       - name: Check SARIF files
         id: check-sarif
