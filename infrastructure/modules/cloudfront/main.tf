@@ -132,7 +132,6 @@ resource "aws_cloudfront_distribution" "website" {
 
   aliases = ["rekoglabelify.com", "www.rekoglabelify.com"]
 
-  continuous_deployment_policy_id = aws_cloudfront_continuous_deployment_policy.canary.id
 
   default_cache_behavior {
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
