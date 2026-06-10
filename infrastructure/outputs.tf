@@ -136,6 +136,16 @@ output "aws_acm_certificate_website" {
   value       = module.cloudfront.aws_acm_certificate_website
 }
 
+output "cloudfront_staging_distribution_id" {
+  description = "ID of the CloudFront staging distribution"
+  value       = module.cloudfront.staging_distribution_id
+}
+
+output "cloudfront_staging_domain_name" {
+  description = "Domain name of the CloudFront staging distribution"
+  value       = module.cloudfront.staging_domain_name
+}
+
 
 output "aws_cloudwatch_log_group_api_gateway_logs_arn" {
     description = "ARN of the CloudWatch Log Group for API Gateway access logs."

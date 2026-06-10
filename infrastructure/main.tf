@@ -80,6 +80,7 @@ module "cloudfront" {
   data_aws_s3_bucket_website_id_bucket_regional_domain_name = module.s3.data_aws_s3_bucket_website_id_bucket_regional_domain_name
   aws_acm_certificate_validation_certificate_arn = module.route_53.aws_acm_certificate_validation_certificate_arn
   data_aws_s3_bucket_website_staging_bucket_regional_domain_name = module.s3.website_staging_bucket_regional_domain_name
+  create_continuous_deployment_policy = var.create_cloudfront_continuous_deployment_policy
 }
 
 module "cloudwatch" {

@@ -78,6 +78,7 @@ resource "aws_cloudfront_distribution" "staging" {
 }
 
 resource "aws_cloudfront_continuous_deployment_policy" "canary" {
+  count   = var.create_continuous_deployment_policy ? 1 : 0
   enabled = true
   depends_on = [null_resource.wait_for_staging_deployment]
 

@@ -18,3 +18,9 @@ variable "aws_acm_certificate_validation_certificate_arn" {
   description = "ACM certificate validation for the CloudFront distribution."
   type        = any
 }
+
+variable "create_continuous_deployment_policy" {
+  description = "Whether to create the CloudFront continuous deployment policy. Set to true in a second apply after the staging distribution is deployed."
+  type        = bool
+  default     = false
+}
