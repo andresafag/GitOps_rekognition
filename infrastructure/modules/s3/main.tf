@@ -83,9 +83,6 @@ resource "aws_s3_bucket_public_access_block" "website" {
   restrict_public_buckets = true
 }
 
-
-
-
 resource "aws_s3_bucket_logging" "bucket_logs" {
   bucket        = aws_s3_bucket.image_bucket.id
   target_bucket = aws_s3_bucket.image_bucket.id
