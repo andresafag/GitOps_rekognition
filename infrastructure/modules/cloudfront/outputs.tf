@@ -33,15 +33,6 @@ output "cloudfront_domain_name" {
   value       = aws_cloudfront_distribution.website.domain_name
 }
 
-output "staging_distribution_id" {
-  description = "CloudFront Staging Distribution ID"
-  value       = aws_cloudfront_distribution.staging.id
-}
-
-output "staging_domain_name" {
-  description = "CloudFront Staging Distribution Domain Name"
-  value       = aws_cloudfront_distribution.staging.domain_name
-}
 
 output "certificate_arn" {
   description = "ACM Certificate ARN"
