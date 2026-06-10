@@ -126,24 +126,10 @@ output "aws_acm_certificate_website_arn" {
   value       = module.cloudfront.certificate_arn
 }
 
-# output "aws_acm_certificate_website_domain_validation_options" {
-#   description = "Domain validation options for the ACM certificate."
-#   value       = module.cloudfront.aws_acm_certificate_website_domain_validation_options
-# }
 
 output "aws_acm_certificate_website" {
   description = "ACM Certificate for the CloudFront distribution."
   value       = module.cloudfront.aws_acm_certificate_website
-}
-
-output "cloudfront_staging_distribution_id" {
-  description = "ID of the CloudFront staging distribution"
-  value       = module.cloudfront.staging_distribution_id
-}
-
-output "cloudfront_staging_domain_name" {
-  description = "Domain name of the CloudFront staging distribution"
-  value       = module.cloudfront.staging_domain_name
 }
 
 
