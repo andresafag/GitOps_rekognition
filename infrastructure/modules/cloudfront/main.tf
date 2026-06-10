@@ -79,6 +79,7 @@ resource "aws_cloudfront_distribution" "staging" {
 
 resource "aws_cloudfront_continuous_deployment_policy" "canary" {
   enabled = true
+  depends_on = [null_resource.wait_for_staging_deployment]
 
   traffic_config {
     type = "SingleWeight"
@@ -96,6 +97,21 @@ resource "aws_cloudfront_continuous_deployment_policy" "canary" {
   staging_distribution_dns_names {
     quantity = 1
     items    = [aws_cloudfront_distribution.staging.domain_name]
+  }
+}
+
+resource "null_resource" "wait_for_staging_deployment" {
+  provisioner "local-exec" {
+    command = <<EOT
+COUNT=0
+DIST_ID=${aws_cloudfront_distribution.staging.id}
+while [ "$(aws cloudfront get-distribution --id $DIST_ID --query 'Distribution.Status' --output text 2>/dev/null)" != "Deployed" ]; do
+  sleep 10
+  COUNT=$((COUNT+1))
+  if [ $COUNT -gt 120 ]; then echo "Timeout waiting for CloudFront distribution $DIST_ID to deploy" >&2; exit 1; fi
+done
+EOT
+    interpreter = ["/bin/sh", "-c"]
   }
 }
 
