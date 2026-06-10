@@ -66,23 +66,30 @@ jobs:
         with:
           args: --all-projects --severity-threshold=high --sarif-file-output=snyk-oss.sarif
 
+      - name: Check SARIF files
+        id: check-sarif
+        run: |
+          if [ -f snyk-iac.sarif ]; then echo "iac_exists=true" >> $GITHUB_OUTPUT; else echo "iac_exists=false" >> $GITHUB_OUTPUT; fi
+          if [ -f snyk-code.sarif ]; then echo "code_exists=true" >> $GITHUB_OUTPUT; else echo "code_exists=false" >> $GITHUB_OUTPUT; fi
+          if [ -f snyk-oss.sarif ]; then echo "oss_exists=true" >> $GITHUB_OUTPUT; else echo "oss_exists=false" >> $GITHUB_OUTPUT; fi
+
       - name: Upload Snyk IaC SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: ${{ always() && steps.check-sarif.outputs.iac_exists == 'true' }}
         with:
           sarif_file: snyk-iac.sarif
           category: snyk-iac
 
       - name: Upload Snyk Code SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: ${{ always() && steps.check-sarif.outputs.code_exists == 'true' }}
         with:
           sarif_file: snyk-code.sarif
           category: snyk-code
 
       - name: Upload Snyk Open Source SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: ${{ always() && steps.check-sarif.outputs.oss_exists == 'true' }}
         with:
           sarif_file: snyk-oss.sarif
           category: snyk-oss
