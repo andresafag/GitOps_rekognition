@@ -210,33 +210,7 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform plan
 
-      - name: Terraform Apply (first pass)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -parallelism=20 --auto-approve
-
-      - name: Get staging distribution id
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        id: get-staging-id
-        run: echo "staging_id=$(terraform output -raw cloudfront_staging_distribution_id)" >> $GITHUB_OUTPUT
-
-      - name: Wait for staging distribution to be Deployed
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          COUNT=0
-          DIST_ID=${{ steps.get-staging-id.outputs.staging_id }}
-          while [ "$(aws cloudfront get-distribution --id $DIST_ID --query 'Distribution.Status' --output text 2>/dev/null)" != "Deployed" ]; do
-            sleep 10
-            COUNT=$((COUNT+1))
-            if [ $COUNT -gt 120 ]; then
-              echo "Timeout waiting for CloudFront distribution $DIST_ID to deploy" >&2
-              exit 1
-            fi
-          done
-
       - name: Terraform Apply (enable continuous deployment policy)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -parallelism=20 --auto-approve -var="create_cloudfront_continuous_deployment_policy=true"
     

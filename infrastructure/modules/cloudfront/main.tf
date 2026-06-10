@@ -24,6 +24,7 @@ resource "aws_acm_certificate" "website" {
 }
 
 resource "aws_cloudfront_distribution" "staging" {
+  staging = true
   origin {
     domain_name = var.data_aws_s3_bucket_website_staging_bucket_regional_domain_name
     origin_id   = "S3-${var.website_bucket_name}-staging"
@@ -78,8 +79,7 @@ resource "aws_cloudfront_distribution" "staging" {
 }
 
 resource "aws_cloudfront_continuous_deployment_policy" "canary" {
-  count   = var.create_continuous_deployment_policy ? 1 : 0
-  enabled = true
+  enabled = var.create_continuous_deployment_policy ? true : false
   depends_on = [null_resource.wait_for_staging_deployment]
 
   traffic_config {
@@ -93,7 +93,7 @@ resource "aws_cloudfront_continuous_deployment_policy" "canary" {
         maximum_ttl = 1440
       }
     }
-    }
+  }
 
   staging_distribution_dns_names {
     quantity = 1
@@ -131,6 +131,8 @@ resource "aws_cloudfront_distribution" "website" {
   default_root_object = "index.html"
 
   aliases = ["rekoglabelify.com", "www.rekoglabelify.com"]
+
+  continuous_deployment_policy_id = aws_cloudfront_continuous_deployment_policy.canary.id
 
   default_cache_behavior {
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
