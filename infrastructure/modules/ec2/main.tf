@@ -131,7 +131,7 @@ metrics:
     aws_statistics: [Sum, Average]
     period_seconds: 300
 
-  # Las métricas globales se quedan exactamente igual (sin dimensiones)
+
   - aws_namespace: AWS/Lambda
     aws_metric_name: ConcurrentExecutions
     aws_statistics: [Maximum, Average]

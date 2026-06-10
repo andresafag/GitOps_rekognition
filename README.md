@@ -441,25 +441,39 @@ Example `cloudwatch_exporter` config (`cloudwatch_exporter.yml`) — include nam
 region: us-east-1
 metrics:
   - aws_namespace: AWS/Lambda
+    aws_metric_name: Invocations
+    aws_dimensions: [FunctionName] 
+    aws_dimension_select:
+      FunctionName: [rekognition-presigned-url-lambda]
+    aws_statistics: [Sum, Average]
+    period_seconds: 300
+
+  - aws_namespace: AWS/Lambda
     aws_metric_name: Errors
     aws_dimensions: [FunctionName]
-    range_seconds: 600
-    period_seconds: 60
-    delay_seconds: 60
+    aws_dimension_select:
+      FunctionName: [rekognition-consumer-lambda]
+    aws_statistics: [Sum, Average]
+    period_seconds: 300
 
   - aws_namespace: AWS/Lambda
     aws_metric_name: Duration
     aws_dimensions: [FunctionName]
-    range_seconds: 600
-    period_seconds: 60
-    delay_seconds: 60
+    aws_dimension_select:
+      FunctionName: [video_proccessing]
+    aws_statistics: [Sum, Average]
+    period_seconds: 300
 
-  - aws_namespace: AWS/SQS
-    aws_metric_name: ApproximateNumberOfMessagesVisible
-    aws_dimensions: [QueueName]
-    range_seconds: 600
-    period_seconds: 60
-    delay_seconds: 60
+
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: ConcurrentExecutions
+    aws_statistics: [Maximum, Average]
+    period_seconds: 300
+
+  - aws_namespace: AWS/Lambda
+    aws_metric_name: Throttles
+    aws_statistics: [Sum]
+    period_seconds: 300
 ```
 
 ---

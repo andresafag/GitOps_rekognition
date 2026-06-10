@@ -26,6 +26,27 @@ resource "aws_s3_bucket_policy" "website" {
   })
 }
 
+# Policy for staging website bucket (allow CloudFront OAI to read objects)
+resource "aws_s3_bucket_policy" "website_staging" {
+  count  = var.website_staging_bucket_name != "" ? 1 : 0
+  bucket = var.website_staging_bucket_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontAccessStaging"
+        Effect = "Allow"
+        Principal = {
+          AWS = var.aws_cloudfront_origin_access_identity_iam_arn
+        }
+        Action   = "s3:GetObject"
+        Resource = "${var.website_staging_bucket_arn}/*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy" "video_proccessing_lambda_policy" {
   name = "video_proccessing_lambda_policy"
   role = aws_iam_role.video_proccessing_lambda_role.id

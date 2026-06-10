@@ -53,6 +53,8 @@ module "iam" {
   data_aws_s3_bucket_website_id = module.s3.data_aws_s3_bucket_website_id
   aws_cloudfront_origin_access_identity_iam_arn = module.cloudfront.aws_cloudfront_origin_access_identity_iam_arn
   data_aws_s3_bucket_website_arn = module.s3.data_aws_s3_bucket_website_arn
+  website_staging_bucket_name = module.s3.website_staging_bucket_name
+  website_staging_bucket_arn  = module.s3.website_staging_bucket_arn
   presigned_url_lambda_name = local.presigned_url_lambda_name
   rekognition_lambda_name = local.rekognition_lambda_name
   aws_s3_bucket_image_bucket_arn = module.s3.aws_s3_bucket_image_bucket_arn
@@ -77,6 +79,7 @@ module "cloudfront" {
   website_bucket_name = module.s3.website_bucket_name
   data_aws_s3_bucket_website_id_bucket_regional_domain_name = module.s3.data_aws_s3_bucket_website_id_bucket_regional_domain_name
   aws_acm_certificate_validation_certificate_arn = module.route_53.aws_acm_certificate_validation_certificate_arn
+  data_aws_s3_bucket_website_staging_bucket_regional_domain_name = module.s3.website_staging_bucket_regional_domain_name
 }
 
 module "cloudwatch" {

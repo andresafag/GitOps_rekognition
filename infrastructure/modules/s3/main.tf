@@ -91,3 +91,21 @@ resource "aws_s3_bucket_logging" "bucket_logs" {
   target_bucket = aws_s3_bucket.image_bucket.id
   target_prefix = "logs/"
 }
+
+# Staging website bucket for Canary/preview
+resource "aws_s3_bucket" "website_staging" {
+  bucket        = lower("s3-${var.website_bucket_name}-staging")
+  force_destroy = true
+
+  tags = local.lambda_tags
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "website_staging" {
+  bucket = aws_s3_bucket.website_staging.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}

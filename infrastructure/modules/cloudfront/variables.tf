@@ -8,6 +8,12 @@ variable "data_aws_s3_bucket_website_id_bucket_regional_domain_name" {
   type        = string
 }
 
+variable "data_aws_s3_bucket_website_staging_bucket_regional_domain_name" {
+  description = "Regional domain name of the staging S3 bucket for CloudFront origin."
+  type        = string
+  default     = ""
+}
+
 variable "aws_acm_certificate_validation_certificate_arn" {
   description = "ACM certificate validation for the CloudFront distribution."
   type        = any

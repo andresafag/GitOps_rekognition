@@ -62,6 +62,18 @@ variable "aws_dynamodb_table_video_job_table_arn" {
   type = string
 }
 
+variable "website_staging_bucket_name" {
+  description = "Name of the staging S3 bucket used for CloudFront staging origin."
+  type        = string
+  default     = ""
+}
+
+variable "website_staging_bucket_arn" {
+  description = "ARN of the staging S3 bucket used for CloudFront staging origin."
+  type        = string
+  default     = ""
+}
+
 variable "yace_instance_profile_name" {
   description = "If set, use an existing instance profile name for YACE instead of creating one"
   type        = string
