@@ -5,17 +5,14 @@ receivers:
       http:
 
 exporters:
-  otlphttp/prometheus:
+  otlphttp:
     endpoint: "http://44.210.111.254:9090/api/v1/otlp"
+    tls:
+      insecure: true
 
 service:
   pipelines:
     metrics:
       receivers: [otlp]
       processors: []
-      exporters: [otlphttp/prometheus]
-
-    logs:
-      receivers: [otlp]
-      processors: []
-      exporters: [otlphttp/prometheus]
+      exporters: [otlphttp]

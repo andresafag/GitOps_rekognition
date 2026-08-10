@@ -203,6 +203,11 @@ def handler(event, context):
 
     except Exception as metadata_error:
         print(f'Could not read object metadata: {metadata_error}')
+        track_image_processed(status="error", function_name=context.function_name)
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Error processing SQS batch.'})
+        }
 
     track_image_processed(status="success", function_name=context.function_name)
     return {
