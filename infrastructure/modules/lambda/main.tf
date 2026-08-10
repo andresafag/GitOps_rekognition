@@ -72,7 +72,7 @@ resource "aws_lambda_function" "rekognition_consumer" {
   handler          = var.lambda_handler
   runtime          = var.runtime_version
   role             = var.role_rekognition_consumer_arn
-  layers = ["arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-amd64-ver-1-21-0:1"]
+  layers = ["arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-1-21-0:1"]
   timeout = 15
 
   environment {
