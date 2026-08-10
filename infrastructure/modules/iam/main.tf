@@ -149,21 +149,15 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
         Resource = "*"
       },
       {
-        "Action": [
-            "lambda:ListLayers",
-            "lambda:ListLayerVersions",
-            "lambda:GetLayerVersion",
-            "lambda:GetLayerVersionPolicy",
-            "lambda:DeleteLayerVersion",
-            "lambda:PublishLayerVersion",
-            "lambda:AddLayerVersionPermission",
-            "lambda:RemoveLayerVersionPermission",
-            "lambda:PutRuntimeManagementConfig",
-            "lambda:GetRuntimeManagementConfig"
-        ],
-        "Effect": "Allow",
-        "Resource": "arn:aws:lambda:us-east-1:*:function:rekognition-consumer-lambda"
-    },
+        Effect = "Allow"
+        Action = [
+          "lambda:ListLayers",
+          "lambda:ListLayerVersions",
+          "lambda:GetLayerVersion",
+          "lambda:GetLayerVersionPolicy"
+        ]
+        Resource = "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-*"
+      },
       {
         Effect = "Allow"
         Action = [
@@ -185,10 +179,9 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
           "lambda:GetLayerVersion",
           "lambda:ListLayerVersions",
           "lambda:ListLayers",
-          "lambda:GetLayerVersionPolicy",
-          "lambda:UpdateLayerVersionPermission"
+          "lambda:GetLayerVersionPolicy"
         ]
-        Resource = "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-1-21-0:1"
+        Resource = "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-*"
       },
       {
         Effect = "Allow"
