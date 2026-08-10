@@ -156,7 +156,7 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
           "lambda:GetLayerVersion",
           "lambda:GetLayerVersionPolicy"
         ]
-        Resource = "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-*"
+        Resource = "arn:aws:lambda:us-east-1:615299751070:layer:AWSOpenTelemetryDistroPython:*"
       },
       {
         Effect = "Allow"
@@ -181,7 +181,7 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
           "lambda:ListLayers",
           "lambda:GetLayerVersionPolicy"
         ]
-        Resource = "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-*"
+        Resource = "arn:aws:lambda:us-east-1:615299751070:layer:AWSOpenTelemetryDistroPython:*"
       },
       {
         Effect = "Allow"
