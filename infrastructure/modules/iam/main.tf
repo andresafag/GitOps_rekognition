@@ -149,13 +149,33 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
         Resource = "*"
       },
       {
+        "Action": [
+            "lambda:ListLayers",
+            "lambda:ListLayerVersions",
+            "lambda:GetLayerVersion",
+            "lambda:GetLayerVersionPolicy",
+            "lambda:DeleteLayerVersion",
+            "lambda:PublishLayerVersion",
+            "lambda:AddLayerVersionPermission",
+            "lambda:RemoveLayerVersionPermission",
+            "lambda:PutRuntimeManagementConfig",
+            "lambda:GetRuntimeManagementConfig"
+        ],
+        "Effect": "Allow",
+        "Resource": "arn:aws:lambda:us-east-1:*:function:rekognition-consumer-lambda"
+    },
+      {
         Effect = "Allow"
         Action = [
           "s3:GetObject",
           "s3:ListBucket",
           "s3:GetBucketLocation",
           "s3:GetObjectMetadata",
-          "s3:DeleteObject"
+          "s3:DeleteObject",
+          "s3:GetBucketMetadataTableConfiguration",
+          "s3:CreateBucketMetadataTableConfiguration",
+          "s3:DeleteBucketMetadataTableConfiguration",
+          "s3:UpdateBucketMetadataAnnotationTableConfiguration"
         ]
         Resource = "${var.aws_s3_bucket_image_bucket_arn}/*"
       },

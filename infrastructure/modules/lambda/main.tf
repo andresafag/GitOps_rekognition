@@ -72,7 +72,8 @@ resource "aws_lambda_function" "rekognition_consumer" {
   handler          = var.lambda_handler
   runtime          = var.runtime_version
   role             = var.role_rekognition_consumer_arn
-
+  layers = ["arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-amd64-ver-1-21-0:1"]
+  timeout = 15
 
   environment {
     variables = {
@@ -81,6 +82,8 @@ resource "aws_lambda_function" "rekognition_consumer" {
       IAM_ROLE_ARN      = var.aws_iam_role_rekognition_service_role
       VIDEO_UPDATES_SQS_QUEUE_URL = var.aws_sqs_queue_policy_allow_sns_send_message_queue_url
       VIDEO_JOB_TABLE = var.aws_dynamodb_table_video_job_table_name
+      AWS_LAMBDA_EXEC_WRAPPER = "/opt/otel-instrument"
+      OPENTELEMETRY_COLLECTOR_CONFIG_FILE = "/var/task/collector.yaml"
     }
   }
 
