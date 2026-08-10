@@ -2,10 +2,11 @@ import json
 from pathlib import Path
 import boto3
 import base64
+import urllib.parse
 import os
 from datetime import datetime
-import random  # Requerido para colores aleatorios
-import io      # Requerido para manejar bytes de imágenes en memoria
+import random  
+from monitoring import track_image_processed    
 
 rekognition = boto3.client('rekognition')
 s3 = boto3.client('s3')
@@ -24,7 +25,7 @@ def handler(event, context):
         if 'Records' in body:
             for s3_record in body['Records']:
                 try:
-                    object_key = s3_record['s3']['object']['key']
+                    object_key = urllib.parse.unquote_plus(s3_record['s3']['object']['key'])
                     bucket_name = s3_record['s3']['bucket']['name']
 
                     image = {
@@ -203,7 +204,7 @@ def handler(event, context):
     except Exception as metadata_error:
         print(f'Could not read object metadata: {metadata_error}')
 
-
+    track_image_processed(status="success", function_name=context.function_name)
     return {
         'statusCode': 200,
         'body': json.dumps({'message': 'Processed SQS batch.'})

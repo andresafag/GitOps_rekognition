@@ -1,0 +1,21 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  otlphttp/prometheus:
+    endpoint: "http://44.210.111.254:9090/api/v1/otlp"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlphttp/prometheus]
+
+    logs:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlphttp/prometheus]
