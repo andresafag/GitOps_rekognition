@@ -182,6 +182,44 @@ resource "aws_iam_role_policy" "rekognition_lambda_policy" {
       {
         Effect = "Allow"
         Action = [
+          "lambda:GetLayerVersion",
+          "lambda:ListLayerVersions",
+          "lambda:ListLayers",
+          "lambda:GetLayerVersionPolicy",
+          "lambda:UpdateLayerVersionPermission"
+        ]
+        Resource = "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-x86_64-ver-1-21-0:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = var.aws_dynamodb_table_video_job_table_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "iam:PassRole"
+        Resource = aws_iam_role.rekognition_service_role.arn
+        Condition = {
+          StringEquals = {
+            "iam:PassedToService" = "rekognition.amazonaws.com"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*" 
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "execute-api:Invoke",
           "execute-api:ManageConnections",
           "execute-api:SendMessage",
