@@ -240,12 +240,12 @@ GFDB
     yum install -y jq || true
     GRAFANA_URL="http://127.0.0.1:3000"
     for i in 1 2 3 4 5; do
-      if curl -s -u admin:${var.grafana_admin_password} ${GRAFANA_URL}/api/health >/dev/null 2>&1; then
-        echo "Found existing Grafana at ${GRAFANA_URL}, exporting dashboards..."
+      if curl -s -u admin:${var.grafana_admin_password} $GRAFANA_URL/api/health >/dev/null 2>&1; then
+        echo "Found existing Grafana at $GRAFANA_URL, exporting dashboards..."
         mkdir -p /var/lib/grafana/dashboards || true
-        curl -s -u admin:${var.grafana_admin_password} "${GRAFANA_URL}/api/search?query=" | jq -r '.[] | select(.type=="dash-db") | .uid' | while read uid; do
+        curl -s -u admin:${var.grafana_admin_password} "$GRAFANA_URL/api/search?query=" | jq -r '.[] | select(.type=="dash-db") | .uid' | while read uid; do
           echo "Exporting dashboard $uid"
-          curl -s -u admin:${var.grafana_admin_password} "${GRAFANA_URL}/api/dashboards/uid/$uid" > /var/lib/grafana/dashboards/$uid.json || true
+          curl -s -u admin:${var.grafana_admin_password} "$GRAFANA_URL/api/dashboards/uid/$uid" > /var/lib/grafana/dashboards/$uid.json || true
         done
         break
       fi
