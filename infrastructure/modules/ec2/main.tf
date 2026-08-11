@@ -25,13 +25,13 @@ resource "aws_security_group" "prometheus_sg" {
   description = "Allow Prometheus access on port ${var.prometheus_port}"
   vpc_id      = data.aws_vpc.default.id
 
-  ingress {
-    from_port   = var.prometheus_port
-    to_port     = var.prometheus_port
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr != "" ? [var.allowed_cidr] : [data.aws_vpc.default.cidr_block]
-    description = "Prometheus UI"
-  }
+  # ingress {
+  #   from_port   = var.prometheus_port
+  #   to_port     = var.prometheus_port
+  #   protocol    = "tcp"
+  #   cidr_blocks = var.allowed_cidr != "" ? [var.allowed_cidr] : [data.aws_vpc.default.cidr_block]
+  #   description = "Prometheus UI"
+  # }
 
   ingress {
     from_port   = 22
@@ -39,6 +39,22 @@ resource "aws_security_group" "prometheus_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "SSH"
+  }
+
+  ingress {
+    from_port   = var.prometheus_port
+    to_port     = var.prometheus_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Prometheus UI"
+  }
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Grafana UI"
   }
 
   # allow egress
@@ -62,8 +78,8 @@ resource "aws_instance" "prometheus" {
   key_name = var.key_name
   metadata_options {
     http_endpoint               = "enabled"
-    http_tokens                 = "required" # O "optional" si usas IMDSv1
-    http_put_response_hop_limit = 2          # <--- ESTO ES LO CRÍTICO PARA DOCKER
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2          
     instance_metadata_tags      = "enabled"
   }
   tags = merge({ Name = var.instance_name }, var.tags)
@@ -191,10 +207,80 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 PROMSVC
 
+    # Create Grafana directories and provisioning (persistent storage)
+    mkdir -p /var/lib/grafana /etc/grafana/provisioning/datasources /etc/grafana/provisioning/dashboards /var/lib/grafana/dashboards || true
+
+    # Datasource: Prometheus running on localhost:9090
+    cat > /etc/grafana/provisioning/datasources/datasource.yml <<'GFDS'
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://localhost:9090
+    isDefault: true
+    editable: true
+GFDS
+
+    # Dashboards provisioning: read JSON files from /var/lib/grafana/dashboards
+    cat > /etc/grafana/provisioning/dashboards/dashboards.yml <<'GFDB'
+apiVersion: 1
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    options:
+      path: /var/lib/grafana/dashboards
+GFDB
+
+    # Attempt to export dashboards from any existing Grafana on localhost
+    # (helps preserve dashboards when switching to the containerized Grafana)
+    yum install -y jq || true
+    GRAFANA_URL="http://127.0.0.1:3000"
+    for i in 1 2 3 4 5; do
+      if curl -s -u admin:${var.grafana_admin_password} ${GRAFANA_URL}/api/health >/dev/null 2>&1; then
+        echo "Found existing Grafana at ${GRAFANA_URL}, exporting dashboards..."
+        mkdir -p /var/lib/grafana/dashboards || true
+        curl -s -u admin:${var.grafana_admin_password} "${GRAFANA_URL}/api/search?query=" | jq -r '.[] | select(.type=="dash-db") | .uid' | while read uid; do
+          echo "Exporting dashboard $uid"
+          curl -s -u admin:${var.grafana_admin_password} "${GRAFANA_URL}/api/dashboards/uid/$uid" > /var/lib/grafana/dashboards/$uid.json || true
+        done
+        break
+      fi
+      sleep 5
+    done
+
+    # Create systemd unit for Grafana (container)
+    cat > /etc/systemd/system/grafana.service <<'GFSVC'
+[Unit]
+Description=Grafana (container)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=/usr/bin/docker pull grafana/grafana:latest
+ExecStartPre=/usr/bin/docker rm -f grafana || true
+  ExecStart=/usr/bin/docker run --name grafana --network=host \
+    -v /var/lib/grafana:/var/lib/grafana \
+    -v /etc/grafana/provisioning:/etc/grafana/provisioning \
+    -e "GF_SECURITY_ADMIN_PASSWORD=${var.grafana_admin_password}" \
+    grafana/grafana:latest
+ExecStop=/usr/bin/docker stop -t 10 grafana || true
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+GFSVC
+
     # Reload systemd, enable and start services
     systemctl daemon-reload || true
     systemctl enable --now yace.service || true
     systemctl enable --now prometheus.service || true
+    systemctl enable --now grafana.service || true
 EOF
 
 }

@@ -46,3 +46,9 @@ variable "iam_instance_profile" {
   type        = string
   default     = ""
 }
+
+variable "grafana_admin_password" {
+  description = "Admin password for Grafana (use secure mechanism in prod)"
+  type        = string
+  default     = "Ironman.12"
+}
