@@ -197,5 +197,5 @@ output "aws_dynamodb_table_video_job_table_arn" {
 }
 
 output "aws_default_ip" {
-    value = aws_vpc.default.public_ip
+    value = module.ec2.aws_default_ip
 }
