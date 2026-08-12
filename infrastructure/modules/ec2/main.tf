@@ -25,14 +25,6 @@ resource "aws_security_group" "prometheus_sg" {
   description = "Allow Prometheus access on port ${var.prometheus_port}"
   vpc_id      = data.aws_vpc.default.id
 
-  # ingress {
-  #   from_port   = var.prometheus_port
-  #   to_port     = var.prometheus_port
-  #   protocol    = "tcp"
-  #   cidr_blocks = var.allowed_cidr != "" ? [var.allowed_cidr] : [data.aws_vpc.default.cidr_block]
-  #   description = "Prometheus UI"
-  # }
-
   ingress {
     from_port   = 22
     to_port     = 22
@@ -209,6 +201,20 @@ PROMSVC
 
     # Create Grafana directories and provisioning (persistent storage)
     mkdir -p /var/lib/grafana /etc/grafana/provisioning/datasources /etc/grafana/provisioning/dashboards /var/lib/grafana/dashboards || true
+    # Set permissions for Grafana container (runs as UID 472)
+    chown -R 472:472 /var/lib/grafana || true
+    chmod -R 755 /var/lib/grafana || true
+    chown -R 472:472 /etc/grafana || true
+    chmod -R 755 /etc/grafana || true
+
+    # Ensure ownership and modes persist across reboots using systemd-tmpfiles
+    cat > /etc/tmpfiles.d/grafana.conf <<'TMP'
+  d /var/lib/grafana 0755 472 472 -
+  d /var/lib/grafana/dashboards 0755 472 472 -
+  d /etc/grafana 0755 472 472 -
+  TMP
+    # Apply tmpfiles immediately (and the file will be honored at boot)
+    systemd-tmpfiles --create /etc/tmpfiles.d/grafana.conf || true
 
     # Datasource: Prometheus running on localhost:9090
     cat > /etc/grafana/provisioning/datasources/datasource.yml <<'GFDS'
@@ -262,16 +268,8 @@ Requires=docker.service
 [Service]
 Restart=always
 RestartSec=5
-ExecStartPre=/usr/bin/docker pull grafana/grafana:latest
-ExecStartPre=/usr/bin/docker rm -f grafana || true
-  ExecStart=/usr/bin/docker run --name grafana --network=host \
-    -v /var/lib/grafana:/var/lib/grafana \
-    -v /etc/grafana/provisioning:/etc/grafana/provisioning \
-    -e "GF_SECURITY_ADMIN_PASSWORD=${var.grafana_admin_password}" \
-    grafana/grafana:latest
-ExecStop=/usr/bin/docker stop -t 10 grafana || true
-TimeoutStartSec=0
-
+ExecStartPre=/bin/bash -c 'chown -R 472:472 /var/lib/grafana /etc/grafana || true'
+ExecStartPre=/bin/bash -c 'chmod -R 755 /var/lib/grafana /etc/grafana || true'
 [Install]
 WantedBy=multi-user.target
 GFSVC
