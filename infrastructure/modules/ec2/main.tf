@@ -17,16 +17,8 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
-}
 
-data "aws_network_interface" "prometheus_eni" {
-  # Narrows the search to the default VPC
-  vpc_id = data.aws_vpc.default.id
-
-  filter {
-    name   = "tag:Name"
-    values = ["prometheus-yace"] 
-  }
+  
 }
 
 resource "aws_security_group" "prometheus_sg" {
@@ -83,7 +75,9 @@ resource "aws_instance" "prometheus" {
     http_put_response_hop_limit = 2          
     instance_metadata_tags      = "enabled"
   }
-  tags = merge({ Name = var.instance_name }, var.tags)
+  tags = {
+    Name = "prometheus-yace"
+  }
 
   user_data = <<-EOF
     #!/bin/bash
