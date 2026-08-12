@@ -19,6 +19,15 @@ data "aws_subnets" "default" {
   }
 }
 
+data "aws_network_interface" "prometheus_eni" {
+  # Narrows the search to the default VPC
+  vpc_id = data.aws_vpc.default.id
+
+  filter {
+    name   = "tag:Name"
+    values = ["prometheus-yace"] 
+  }
+}
 
 resource "aws_security_group" "prometheus_sg" {
   name        = "prometheus-yace-sg"
