@@ -36,6 +36,7 @@ module "lambda" {
   aws_dynamodb_table_video_job_table_name = module.dynamodb.aws_dynamodb_table_video_job_table_name
   api_gateway_websocket_execution_arn = module.apigateway.api_gateway_websocket_execution_arn
   role_ping_pong = module.iam.role_ping_pong
+  aws_default_ip = module.ec2.aws_default_ip
 }
 
 

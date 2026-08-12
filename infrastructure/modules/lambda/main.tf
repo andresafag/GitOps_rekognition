@@ -84,7 +84,7 @@ resource "aws_lambda_function" "rekognition_consumer" {
       VIDEO_JOB_TABLE = var.aws_dynamodb_table_video_job_table_name
       AWS_LAMBDA_EXEC_WRAPPER              = "/opt/otel-instrument"
       OTEL_METRICS_EXPORTER                = "otlp"
-      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT  = "http://54.163.164.255:9090/api/v1/otlp/v1/metrics"
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT  = "http://${var.aws_default_ip}:9090/api/v1/otlp/v1/metrics"
       OTEL_EXPORTER_OTLP_METRICS_PROTOCOL  = "http/protobuf"
       OTEL_SERVICE_NAME                    = "rekognition-consumer-lambda"
       OTEL_AWS_APPLICATION_SIGNALS_ENABLED = "false"

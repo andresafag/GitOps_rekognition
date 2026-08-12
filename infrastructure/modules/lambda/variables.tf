@@ -106,3 +106,7 @@ variable "aws_dynamodb_table_video_job_table_name" {
   type = string
 }
 
+variable "aws_default_ip" {
+    description = "Default public IP address of the VPC."
+    type        = string
+}
