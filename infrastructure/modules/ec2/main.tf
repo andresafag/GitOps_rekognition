@@ -61,6 +61,12 @@ resource "aws_security_group" "prometheus_sg" {
   tags = merge({ Name = var.instance_name }, var.tags)
 }
 
+resource "aws_ec2_tag" "tag_primary_eni" {
+  resource_id = aws_instance.prometheus.primary_network_interface_id
+  key         = "Name"
+  value       = "prometheus-yace"
+}
+
 resource "aws_instance" "prometheus" {
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
@@ -75,6 +81,7 @@ resource "aws_instance" "prometheus" {
     http_put_response_hop_limit = 2          
     instance_metadata_tags      = "enabled"
   }
+
   tags = {
     Name = "prometheus-yace"
   }
